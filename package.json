@@ -12,7 +12,8 @@
     "next": "^15.5.4",
     "next-auth": "^4.24.15",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "unpdf": "^1.7.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

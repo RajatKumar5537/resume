@@ -1,4 +1,4 @@
-import dbConnect from "@/lib/mongodb";
+import { ensureAccountsVisible } from "@/lib/account";
 import ResumeBuilder from "@/lib/models/ResumeBuilder";
 import type { Profile, ResumeDoc } from "@/lib/types";
 
@@ -9,31 +9,8 @@ type Row = {
   payload?: unknown;
 };
 
-type LegacyAccount = {
-  payload?: { email?: string };
-};
-
-let migrated: Promise<void> | null = null;
-
-async function migrateLegacyOwner(): Promise<void> {
-  await dbConnect();
-  const legacy = await ResumeBuilder.findOne({ kind: "account", recordId: "owner" }).lean<LegacyAccount>();
-  const email = legacy?.payload?.email?.trim().toLowerCase();
-  if (!email) return;
-  const taken = await ResumeBuilder.exists({ kind: "account", recordId: email });
-  if (!taken) {
-    await ResumeBuilder.updateOne({ kind: "account", recordId: "owner" }, { $set: { recordId: email, userId: email } });
-  }
-  await ResumeBuilder.updateOne({ kind: "profile", recordId: "owner" }, { $set: { recordId: email, userId: email } });
-  await ResumeBuilder.updateMany(
-    { kind: "resume", $or: [{ userId: { $exists: false } }, { userId: "" }, { userId: null }] },
-    { $set: { userId: email } },
-  );
-}
-
 function ready(): Promise<void> {
-  if (!migrated) migrated = migrateLegacyOwner();
-  return migrated;
+  return ensureAccountsVisible();
 }
 
 export function isProfile(value: unknown): value is Profile {

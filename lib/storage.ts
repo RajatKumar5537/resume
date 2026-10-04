@@ -60,15 +60,20 @@ function migrateLocalOnce(): Promise<void> {
 
 async function moveLocalData(): Promise<void> {
   if (!canStore() || localStorage.getItem(MIGRATED_KEY) === "1") return;
-  const [profileResponse, resumeResponse] = await Promise.all([
+  const [profileResponse, resumeResponse, session] = await Promise.all([
     request<{ profile: Profile | null }>("/api/profile"),
     request<{ resumes: ResumeDoc[] }>("/api/resumes"),
+    request<{ user?: { email?: string | null } }>("/api/auth/session"),
   ]);
+  const signedIn = session.user?.email?.trim().toLowerCase() || "";
   const localProfile = readLocalProfile();
-  const localResumes = readLocalResumes();
+  const localEmail = localProfile?.email?.trim().toLowerCase() || "";
+  const samePerson = Boolean(signedIn && localEmail && signedIn === localEmail);
+  if (!samePerson) return;
   if (!profileResponse.profile && localProfile) {
     await request("/api/profile", { method: "PUT", body: JSON.stringify({ profile: localProfile }) });
   }
+  const localResumes = readLocalResumes();
   const remoteIds = new Set((resumeResponse.resumes ?? []).map((resume) => resume.id));
   for (const resume of localResumes) {
     if (remoteIds.has(resume.id)) continue;

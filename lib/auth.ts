@@ -1,7 +1,7 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { getServerSession } from "next-auth";
-import { verifyAccount } from "@/lib/account";
+import { accountName, verifyAccount } from "@/lib/account";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -24,6 +24,24 @@ export const authOptions: NextAuthOptions = {
   pages: { signIn: "/login" },
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user?.name) token.name = user.name;
+      if (user?.email) token.email = user.email;
+      if (!token.name && typeof token.email === "string") {
+        const name = await accountName(token.email);
+        if (name) token.name = name;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.name = typeof token.name === "string" ? token.name : session.user.name;
+        session.user.email = typeof token.email === "string" ? token.email : session.user.email;
+      }
+      return session;
+    },
+  },
 };
 
 export async function requireUser() {
