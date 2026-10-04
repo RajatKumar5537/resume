@@ -25,6 +25,7 @@ export default async function dbConnect() {
   if (cached.conn) return cached.conn;
   if (!cached.promise) {
     cached.promise = mongoose.connect(uri, {
+      dbName: "resume-builder",
       bufferCommands: false,
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 8000,

@@ -2,7 +2,7 @@ import { Schema, model, models } from "mongoose";
 
 const ResumeBuilderSchema = new Schema(
   {
-    kind: { type: String, required: true, enum: ["profile", "resume"] },
+    kind: { type: String, required: true, enum: ["profile", "resume", "account"] },
     recordId: { type: String, required: true },
     updatedAt: { type: String, default: "" },
     payload: { type: Schema.Types.Mixed, required: true },

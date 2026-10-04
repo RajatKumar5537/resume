@@ -1,5 +1,6 @@
 import type { Viewport } from "next";
 import { Newsreader, Outfit } from "next/font/google";
+import { Providers } from "@/components/Providers";
 import { Shell } from "@/components/Shell";
 import "./globals.css";
 
@@ -25,7 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${sans.variable} ${serif.variable}`}>
       <body>
-        <Shell>{children}</Shell>
+        <Providers>
+          <Shell>{children}</Shell>
+        </Providers>
       </body>
     </html>
   );

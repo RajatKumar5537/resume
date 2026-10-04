@@ -1,4 +1,5 @@
 import { extractJob } from "@/lib/extract-job";
+import { requireUser } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -49,6 +50,7 @@ async function fetchPublic(url: string): Promise<Response> {
 }
 
 export async function POST(request: Request) {
+  if (!(await requireUser())) return NextResponse.json({ error: "Sign in to continue." }, { status: 401 });
   let url = "";
   try {
     const body = (await request.json()) as { url?: unknown };

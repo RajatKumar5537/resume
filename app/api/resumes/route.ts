@@ -1,10 +1,12 @@
 import { isProfile, isResume, listResumes, removeResume, replaceDesk, writeResume } from "@/lib/desk-store";
+import { requireUser } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
+    if (!(await requireUser())) return NextResponse.json({ error: "Sign in to continue." }, { status: 401 });
     const resumes = await listResumes();
     return NextResponse.json({ resumes });
   } catch {
@@ -14,6 +16,7 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
+    if (!(await requireUser())) return NextResponse.json({ error: "Sign in to continue." }, { status: 401 });
     const body = (await request.json()) as { resume?: unknown; profile?: unknown; resumes?: unknown };
     if (body.resume) {
       if (!isResume(body.resume)) {
@@ -37,6 +40,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    if (!(await requireUser())) return NextResponse.json({ error: "Sign in to continue." }, { status: 401 });
     const id = new URL(request.url).searchParams.get("id")?.trim() || "";
     if (!id) return NextResponse.json({ error: "Missing resume." }, { status: 400 });
     await removeResume(id);
