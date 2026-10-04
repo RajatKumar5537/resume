@@ -4,13 +4,14 @@ const ResumeBuilderSchema = new Schema(
   {
     kind: { type: String, required: true, enum: ["profile", "resume", "account"] },
     recordId: { type: String, required: true },
-    updatedAt: { type: String, default: "" },
+    userId: { type: String, default: "" },
     payload: { type: Schema.Types.Mixed, required: true },
   },
   { collection: "resume_builder" },
 );
 
 ResumeBuilderSchema.index({ kind: 1, recordId: 1 }, { unique: true });
+ResumeBuilderSchema.index({ kind: 1, userId: 1 });
 
 const ResumeBuilder = models.ResumeBuilder || model("ResumeBuilder", ResumeBuilderSchema);
 

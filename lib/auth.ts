@@ -28,6 +28,7 @@ export const authOptions: NextAuthOptions = {
 
 export async function requireUser() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email) return null;
-  return session;
+  const email = session?.user?.email?.trim().toLowerCase();
+  if (!email) return null;
+  return email;
 }

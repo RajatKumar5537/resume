@@ -181,3 +181,21 @@ export const DEFAULT_PROFILE: Profile = {
     ),
   ],
 };
+
+export function blankProfile(): Profile {
+  return {
+    name: "",
+    headline: "",
+    identity: "",
+    years: "",
+    closing: "",
+    email: "",
+    phone: "",
+    location: "",
+    links: [],
+    skillGroups: [],
+    experience: [],
+    projects: [],
+    education: [],
+  };
+}

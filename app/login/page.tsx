@@ -1,35 +1,17 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
   const [mode, setMode] = useState<"sign-in" | "create">("sign-in");
-  const [needsSetup, setNeedsSetup] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    let cancel = false;
-    fetch("/api/auth/status")
-      .then(async (response) => {
-        const data = (await response.json()) as { needsSetup?: boolean };
-        if (!response.ok || cancel) return;
-        if (data.needsSetup) {
-          setNeedsSetup(true);
-          setMode("create");
-        }
-      })
-      .catch(() => undefined);
-    return () => {
-      cancel = true;
-    };
-  }, []);
 
   function showSignIn() {
     setMode("sign-in");
@@ -65,60 +47,51 @@ export default function LoginPage() {
     }
   }
 
-  const creating = mode === "create" && needsSetup;
+  const creating = mode === "create";
 
   return (
     <section className="panel auth-card">
       <h1>{creating ? "Create your account" : "Sign in"}</h1>
       <p className="lede">
         {creating
-          ? "This account is only for Desk. It can be created once."
+          ? "Each person gets their own profile and resumes."
           : "Your resumes stay locked until you sign in."}
       </p>
       {error ? <p className="error">{error}</p> : null}
-      {mode === "create" && !needsSetup ? (
-        <>
-          <p>An account is already set up. Sign in with that email. A second account cannot be created.</p>
+      <form onSubmit={onSubmit}>
+        {creating ? (
+          <div className="field">
+            <label htmlFor="name">Name</label>
+            <input id="name" type="text" autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} />
+          </div>
+        ) : null}
+        <div className="field">
+          <label htmlFor="email">Email</label>
+          <input id="email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} />
+        </div>
+        <div className="field">
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            autoComplete={creating ? "new-password" : "current-password"}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+        </div>
+        <button className="btn" type="submit" disabled={busy}>
+          {busy ? "Please wait…" : creating ? "Create account" : "Sign in"}
+        </button>
+        {creating ? (
           <button className="btn secondary auth-switch" type="button" onClick={showSignIn}>
             Back to sign in
           </button>
-        </>
-      ) : (
-        <form onSubmit={onSubmit}>
-          {creating ? (
-            <div className="field">
-              <label htmlFor="name">Name</label>
-              <input id="name" type="text" autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} />
-            </div>
-          ) : null}
-          <div className="field">
-            <label htmlFor="email">Email</label>
-            <input id="email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} />
-          </div>
-          <div className="field">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              autoComplete={creating ? "new-password" : "current-password"}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          </div>
-          <button className="btn" type="submit" disabled={busy}>
-            {busy ? "Please wait…" : creating ? "Create account" : "Sign in"}
+        ) : (
+          <button className="btn secondary auth-switch" type="button" onClick={showCreate}>
+            Create account
           </button>
-          {creating ? (
-            <button className="btn secondary auth-switch" type="button" onClick={showSignIn}>
-              Back to sign in
-            </button>
-          ) : (
-            <button className="btn secondary auth-switch" type="button" onClick={showCreate}>
-              Create account
-            </button>
-          )}
-        </form>
-      )}
+        )}
+      </form>
     </section>
   );
 }

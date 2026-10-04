@@ -1,4 +1,4 @@
-import { DEFAULT_PROFILE } from "@/lib/default-profile";
+import { blankProfile } from "@/lib/default-profile";
 import type { Profile, ResumeDoc } from "@/lib/types";
 
 const PROFILE_KEY = "desk.profile.v1";
@@ -81,7 +81,7 @@ export async function loadProfile(): Promise<Profile> {
   await migrateLocalOnce();
   const data = await request<{ profile: Profile | null }>("/api/profile");
   if (data.profile) return data.profile;
-  const profile = structuredClone(DEFAULT_PROFILE);
+  const profile = blankProfile();
   await saveProfile(profile);
   return profile;
 }

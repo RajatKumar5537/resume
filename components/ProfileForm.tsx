@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DEFAULT_PROFILE } from "@/lib/default-profile";
 import { buildSummary } from "@/lib/tailor";
 import { exportBackup, loadProfile, parseBackup, replaceAll, saveProfile } from "@/lib/storage";
 import type { Education, LinkItem, Profile, Project, Role, SkillGroup } from "@/lib/types";
@@ -379,7 +378,7 @@ export function ProfileForm() {
 
       <section className="editor-card">
         <h3>Backup</h3>
-        <p className="hint">Your profile and resumes are stored in a new MongoDB collection named resume_builder. It does not use the personal tracker or chat collections.</p>
+        <p className="hint">Each person has their own profile and resumes in the resume-builder database.</p>
         <div className="actions">
           <button className="btn" type="button" onClick={downloadBackup}>
             Download backup
@@ -398,17 +397,6 @@ export function ProfileForm() {
               event.target.value = "";
             }}
           />
-          <button
-            className="btn danger"
-            type="button"
-            onClick={() => {
-              if (!window.confirm("Replace the master profile with the 29 Sep 2026 resume?")) return;
-              commit(structuredClone(DEFAULT_PROFILE));
-              setMessage("Restored the 29 Sep 2026 resume.");
-            }}
-          >
-            Restore original resume
-          </button>
         </div>
       </section>
     </div>

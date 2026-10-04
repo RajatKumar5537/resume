@@ -6,8 +6,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    if (!(await requireUser())) return NextResponse.json({ error: "Sign in to continue." }, { status: 401 });
-    const profile = await readProfile();
+    const userId = await requireUser();
+    if (!userId) return NextResponse.json({ error: "Sign in to continue." }, { status: 401 });
+    const profile = await readProfile(userId);
     return NextResponse.json({ profile });
   } catch {
     return NextResponse.json({ error: "Could not load your profile from the database." }, { status: 500 });
@@ -16,12 +17,13 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
-    if (!(await requireUser())) return NextResponse.json({ error: "Sign in to continue." }, { status: 401 });
+    const userId = await requireUser();
+    if (!userId) return NextResponse.json({ error: "Sign in to continue." }, { status: 401 });
     const body = (await request.json()) as { profile?: unknown };
     if (!isProfile(body.profile)) {
       return NextResponse.json({ error: "That profile could not be saved." }, { status: 400 });
     }
-    await writeProfile(body.profile);
+    await writeProfile(userId, body.profile);
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Could not save your profile to the database." }, { status: 500 });
