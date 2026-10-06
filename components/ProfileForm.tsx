@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { buildSummary } from "@/lib/tailor";
+import { needsMasterResume } from "@/lib/default-profile";
 import { exportBackup, loadProfile, parseBackup, replaceAll, saveProfile } from "@/lib/storage";
 import type { Education, LinkItem, Profile, Project, Role, SkillGroup } from "@/lib/types";
 
@@ -13,6 +14,7 @@ export function ProfileForm() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     let cancel = false;
@@ -80,6 +82,26 @@ export function ProfileForm() {
     });
   }
 
+  async function uploadResume(file: File) {
+    if (profile && !needsMasterResume(profile) && !window.confirm("Replace your master profile with this resume?")) return;
+    setImporting(true);
+    setError("");
+    setMessage("");
+    try {
+      const body = new FormData();
+      body.append("resume", file);
+      const response = await fetch("/api/profile/import", { method: "POST", body });
+      const data = (await response.json()) as { profile?: Profile; error?: string };
+      if (!response.ok || !data.profile) throw new Error(data.error || "That resume could not be read.");
+      setProfile(data.profile);
+      setMessage("Your resume is now the master profile. New job resumes use this, and nobody else's.");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "That resume could not be read.");
+    } finally {
+      setImporting(false);
+    }
+  }
+
   async function downloadBackup() {
     try {
       const payload = JSON.stringify(await exportBackup(), null, 2);
@@ -111,17 +133,43 @@ export function ProfileForm() {
     return <p className={error ? "error" : "hint"}>{error || "Loading profile…"}</p>;
   }
 
+  const empty = needsMasterResume(profile);
   const preview = buildSummary(profile, profile.headline);
 
   return (
     <div className="narrow">
       <h1>Master profile</h1>
       <p className="lede">
-        Imported from your 29 Sep 2026 resume. New job resumes use this copy. Nothing is invented, and later edits
-        here apply to the next resume you write.
+        {empty
+          ? "Upload your own resume. Desk saves it as your master profile and writes later job resumes from that file."
+          : "Job resumes are written from this profile. Upload a new resume to replace it, or edit the fields below."}
       </p>
       {message ? <p className="hint">{message}</p> : null}
       {error ? <p className="error">{error}</p> : null}
+
+      <section className="editor-card">
+        <h3>Upload resume</h3>
+        <p className="hint">
+          PDF or text. A developer, tester, or any other role is read from the file you upload. Another person's jobs and skills are not copied in.
+        </p>
+        <div className="actions">
+          <label className="btn" htmlFor="resume-file">
+            {importing ? "Reading resume…" : "Upload resume"}
+          </label>
+          <input
+            id="resume-file"
+            type="file"
+            accept="application/pdf,.pdf,text/plain,.txt"
+            hidden
+            disabled={importing}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) void uploadResume(file);
+              event.target.value = "";
+            }}
+          />
+        </div>
+      </section>
 
       <section className="editor-card">
         <h3>Contact</h3>

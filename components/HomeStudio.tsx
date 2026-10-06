@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { deleteResume, loadProfile, loadResumes, upsertResume } from "@/lib/storage";
+import { needsMasterResume } from "@/lib/default-profile";
 import { tailor } from "@/lib/tailor";
 import { guessCompany, guessTitle, isJobLink } from "@/lib/text";
 import type { ResumeDoc } from "@/lib/types";
@@ -35,12 +36,16 @@ export function HomeStudio() {
   const [error, setError] = useState("");
   const [resumes, setResumes] = useState<ResumeDoc[]>([]);
   const [ready, setReady] = useState(false);
+  const [needsResume, setNeedsResume] = useState(false);
 
   useEffect(() => {
     let cancel = false;
     loadResumes()
-      .then((list) => {
-        if (!cancel) setResumes(list);
+      .then(async (list) => {
+        if (cancel) return;
+        setResumes(list);
+        const profile = await loadProfile();
+        if (!cancel) setNeedsResume(needsMasterResume(profile));
       })
       .catch((caught) => {
         if (!cancel) setError(caught instanceof Error ? caught.message : "Could not load your resumes.");
@@ -152,14 +157,27 @@ export function HomeStudio() {
 
   return (
     <div className="narrow">
-      <h1>A resume for this job.</h1>
+      <h1>{needsResume ? "Add your resume first." : "A resume for this job."}</h1>
       <p className="lede">
-        Paste a job link or the full description. Desk writes a resume in your format from your master profile,
-        puts this job’s skills first, and keeps the rest of your skills. Experience stays limited to what you
-        already entered.
+        {needsResume
+          ? "Upload your own resume on the master profile. Desk writes every later job resume from that file, for a developer, a tester, or any other role."
+          : "Paste a job link or the full description. Desk writes a resume in your format from your master profile, puts this job’s skills first, and keeps the rest of your skills. Experience stays limited to what you already entered."}
       </p>
 
-      {step === "paste" ? (
+      {needsResume ? (
+        <section className="panel">
+          <h2>Upload your resume first</h2>
+          <p>
+            A new account does not use anyone else's resume. Upload your master resume, whether you are a developer,
+            a tester, or in another role. Job resumes are then written from that file.
+          </p>
+          <div className="actions">
+            <Link className="btn" href="/profile">
+              Upload resume
+            </Link>
+          </div>
+        </section>
+      ) : step === "paste" ? (
         <section className="panel">
           <label htmlFor="job-source">Job link or description</label>
           <textarea

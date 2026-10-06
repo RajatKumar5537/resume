@@ -199,3 +199,9 @@ export function blankProfile(): Profile {
     education: [],
   };
 }
+
+export function needsMasterResume(profile: Profile): boolean {
+  const hasWork = profile.experience.some((role) => role.title.trim() || role.company.trim() || role.bullets.some((bullet) => bullet.trim()));
+  const hasSkills = profile.skillGroups.some((group) => group.items.some((item) => item.trim()));
+  return !profile.name.trim() || (!hasWork && !hasSkills);
+}
