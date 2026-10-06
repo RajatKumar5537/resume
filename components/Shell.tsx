@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -9,11 +8,6 @@ function currentTheme(): "light" | "dark" {
   const chosen = document.documentElement.getAttribute("data-theme");
   if (chosen === "dark" || chosen === "light") return chosen;
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-
-function homeScreen(): boolean {
-  const nav = window.navigator as Navigator & { standalone?: boolean };
-  return window.matchMedia("(display-mode: standalone)").matches || nav.standalone === true;
 }
 
 function DeskLink({
@@ -28,18 +22,9 @@ function DeskLink({
   children: React.ReactNode;
 }) {
   return (
-    <Link
-      href={href}
-      className={className}
-      data-active={active || undefined}
-      onClick={(event) => {
-        if (!homeScreen()) return;
-        event.preventDefault();
-        window.location.assign(href);
-      }}
-    >
+    <a href={href} className={className} data-active={active || undefined}>
       {children}
-    </Link>
+    </a>
   );
 }
 

@@ -184,16 +184,18 @@ function highlightJava(code: string): Token[] {
 export function JavaCode({ code }: { code: string }) {
   const tokens = highlightJava(code);
   return (
-    <pre className="answer-code">
-      {tokens.map((token, index) =>
-        token.kind === "plain" ? (
-          token.text
-        ) : (
-          <span key={index} className={`tok tok-${token.kind}`}>
-            {token.text}
-          </span>
-        ),
-      )}
-    </pre>
+    <div className="code-scroll">
+      <pre className="answer-code">
+        {tokens.map((token, index) =>
+          token.kind === "plain" ? (
+            token.text
+          ) : (
+            <span key={index} className={`tok tok-${token.kind}`}>
+              {token.text}
+            </span>
+          ),
+        )}
+      </pre>
+    </div>
   );
 }

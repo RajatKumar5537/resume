@@ -418,6 +418,9 @@ input:focus, textarea:focus, button:focus-visible, a:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   text-decoration: none;
   color: inherit;
 }
@@ -557,18 +560,27 @@ details summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
 
 .interview-answer a { overflow-wrap: anywhere; }
 
+.code-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+  background: #1e1e1e;
+}
+
 .answer-code {
   display: block;
   box-sizing: border-box;
-  width: 100%;
-  max-width: 100%;
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
   margin: 0;
   white-space: pre;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-  background: #1e1e1e;
+  overflow: visible;
+  background: transparent;
   color: #d4d4d4;
-  border-radius: 12px;
+  border-radius: 0;
   padding: 14px;
   font-size: 13px;
   line-height: 1.45;
@@ -784,7 +796,8 @@ details summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
 }
 
 /* Phone landscape: both cards fill the space under the header and stay aligned. */
-@media screen and (orientation: landscape) and (max-height: 500px) {
+@media screen and (max-height: 500px) and (min-width: 700px) {
+  html, body { max-width: 100%; overflow-x: hidden; }
   .programs-intro,
   .interview-intro { display: none; }
   body:has(.programs-page),
@@ -801,19 +814,30 @@ details summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
     flex-wrap: nowrap;
     align-items: center;
     gap: 8px;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
     padding: 4px 12px;
     padding-top: max(4px, env(safe-area-inset-top));
     padding-left: max(12px, env(safe-area-inset-left));
     padding-right: max(12px, env(safe-area-inset-right));
   }
-  .brand { white-space: nowrap; }
+  .brand { white-space: nowrap; flex: none; }
   .signed-in { display: none; }
-  .topbar nav { flex-wrap: nowrap; gap: 4px; }
+  .topbar nav {
+    min-width: 0;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    gap: 4px;
+    overflow-x: auto;
+  }
   .topbar nav a,
   .nav-button,
   .theme-toggle {
     position: relative;
     z-index: 1;
+    flex: none;
     min-height: 44px;
     padding: 6px 10px;
     font-size: 13px;
@@ -824,9 +848,11 @@ details summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
     display: flex;
     flex-direction: column;
     width: 100%;
+    max-width: none;
     min-height: 0;
     overflow: hidden;
-    padding: 8px max(14px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+    margin: 0;
+    padding: 8px max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   }
   .programs-page,
   .interview-page {
@@ -836,17 +862,20 @@ details summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
     width: 100%;
     max-width: none;
     min-height: 0;
+    margin: 0;
   }
   .library,
   .interview-layout {
     flex: 1 1 auto;
     display: grid;
-    grid-template-columns: minmax(210px, 34vw) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 34%) minmax(0, 1fr);
     gap: 10px;
     align-items: stretch;
     min-height: 0;
     height: 100%;
+    width: 100%;
   }
+  .interview-layout > :only-child { grid-column: 1 / -1; }
   .library-tree,
   .library-view,
   .interview-ask,
@@ -855,7 +884,10 @@ details summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
     min-height: 0;
     height: 100%;
     max-height: none;
-    overflow: auto;
+    margin: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    box-sizing: border-box;
   }
   .interview-ask textarea { min-height: 64px; }
   .interview-page .answer-text { font-size: 16px; line-height: 1.65; }
@@ -917,6 +949,23 @@ details summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
   }
 
   .contact-line { gap: 4px 10px; font-size: 11.5px; }
+
+  .role-head,
+  .edu-head,
+  .role-sub {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+
+  .role-head h3,
+  .edu-head h3,
+  .role-sub .where { min-width: 0; }
+
+  .dates,
+  .where.place {
+    margin-left: auto;
+    white-space: normal;
+  }
 
   .skill-columns { gap: 4px 14px; }
 
