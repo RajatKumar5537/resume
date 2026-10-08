@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ApplicationRound } from "@/lib/types";
 
 const STAGES = ["Technical Round", "Assignment", "HR Round", "Final Round", "Applied"];
@@ -33,19 +33,17 @@ function RoundEditor({
   rounds,
   busy,
   onSubmit,
-  editorRef,
 }: {
   draft: ApplicationRound;
   setDraft: (round: ApplicationRound | null) => void;
   rounds: ApplicationRound[];
   busy: boolean;
   onSubmit: (event: FormEvent) => void;
-  editorRef: React.RefObject<HTMLFormElement | null>;
 }) {
   const stageOptions = draft.stage && !STAGES.includes(draft.stage) ? [draft.stage, ...STAGES] : STAGES;
   const statusOptions = draft.status && !STATUSES.includes(draft.status) ? [draft.status, ...STATUSES] : STATUSES;
   return (
-    <form className="panel round-editor" ref={editorRef} onSubmit={onSubmit}>
+    <form className="panel round-editor" onSubmit={onSubmit}>
       <h2>{draft.id ? "Edit round" : draft.company ? `Add a round at ${draft.company}` : "New company"}</h2>
       <div className="field">
         <label htmlFor="application-company">Company</label>
@@ -122,7 +120,7 @@ export function ApplicationDesk() {
   const [filter, setFilter] = useState("All");
   const [draft, setDraft] = useState<ApplicationRound | null>(null);
   const [busy, setBusy] = useState(false);
-  const editorRef = useRef<HTMLFormElement>(null);
+  const keepScroll = useRef<number | null>(null);
 
   async function refresh() {
     const response = await fetch("/api/applications");
@@ -144,10 +142,6 @@ export function ApplicationDesk() {
       cancel = true;
     };
   }, []);
-
-  useEffect(() => {
-    editorRef.current?.scrollIntoView({ block: "nearest" });
-  }, [draft?.id, draft?.company]);
 
   const companies = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -203,6 +197,22 @@ export function ApplicationDesk() {
     }
   }
 
+  useLayoutEffect(() => {
+    if (keepScroll.current == null) return;
+    window.scrollTo(0, keepScroll.current);
+  }, [draft]);
+
+  useEffect(() => {
+    if (keepScroll.current == null) return;
+    window.scrollTo(0, keepScroll.current);
+    keepScroll.current = null;
+  }, [draft]);
+
+  function openEditor(round: ApplicationRound) {
+    keepScroll.current = window.scrollY;
+    setDraft(round);
+  }
+
   async function remove(round: ApplicationRound) {
     if (!window.confirm(`Delete the ${round.stage || "round"} at ${round.company}?`)) return;
     setError("");
@@ -245,7 +255,7 @@ export function ApplicationDesk() {
       </div>
 
       {draft && !draft.id && !draft.company ? (
-        <RoundEditor draft={draft} setDraft={setDraft} rounds={rounds} busy={busy} onSubmit={save} editorRef={editorRef} />
+        <RoundEditor draft={draft} setDraft={setDraft} rounds={rounds} busy={busy} onSubmit={save} />
       ) : null}
 
       <div className="application-list">
@@ -277,7 +287,7 @@ export function ApplicationDesk() {
                 </button>
               </div>
               {addingHere && draft ? (
-                <RoundEditor draft={draft} setDraft={setDraft} rounds={rounds} busy={busy} onSubmit={save} editorRef={editorRef} />
+                <RoundEditor draft={draft} setDraft={setDraft} rounds={rounds} busy={busy} onSubmit={save} />
               ) : null}
               <div>
                 {list.map((round) => (
@@ -290,7 +300,7 @@ export function ApplicationDesk() {
                       </div>
                       <span className={`pill ${statusClass(round.status)}`}>{round.status || "Open"}</span>
                       <div className="round-actions">
-                        <button className="btn secondary" type="button" onClick={() => setDraft(round)}>
+                        <button className="btn secondary" type="button" onClick={() => openEditor(round)}>
                           Edit
                         </button>
                         <button className="btn danger" type="button" onClick={() => void remove(round)}>
@@ -299,7 +309,7 @@ export function ApplicationDesk() {
                       </div>
                     </div>
                     {draft?.id === round.id ? (
-                      <RoundEditor draft={draft} setDraft={setDraft} rounds={rounds} busy={busy} onSubmit={save} editorRef={editorRef} />
+                      <RoundEditor draft={draft} setDraft={setDraft} rounds={rounds} busy={busy} onSubmit={save} />
                     ) : null}
                   </div>
                 ))}
