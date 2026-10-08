@@ -91,6 +91,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <DeskLink href="/interview" active={path.startsWith("/interview")}>
             Interview
           </DeskLink>
+          <DeskLink href="/applications" active={path.startsWith("/applications")}>
+            Applications
+          </DeskLink>
           <DeskLink href="/programs" active={path.startsWith("/programs")}>
             Programs
           </DeskLink>

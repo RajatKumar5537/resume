@@ -2,7 +2,7 @@ import { Schema, model, models } from "mongoose";
 
 const ResumeBuilderSchema = new Schema(
   {
-    kind: { type: String, required: true, enum: ["profile", "resume", "account"] },
+    kind: { type: String, required: true, enum: ["profile", "resume", "account", "application"] },
     recordId: { type: String, required: true },
     userId: { type: String, default: "" },
     email: { type: String },
@@ -17,7 +17,9 @@ const ResumeBuilderSchema = new Schema(
 ResumeBuilderSchema.index({ kind: 1, recordId: 1 }, { unique: true });
 ResumeBuilderSchema.index({ kind: 1, userId: 1 });
 
-if (models.ResumeBuilder && !models.ResumeBuilder.schema.path("email")) {
+const cachedBuilder = models.ResumeBuilder;
+const kindEnum = cachedBuilder?.schema.path("kind")?.options?.enum as string[] | undefined;
+if (cachedBuilder && (!cachedBuilder.schema.path("email") || !kindEnum?.includes("application"))) {
   delete models.ResumeBuilder;
 }
 

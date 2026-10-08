@@ -29,6 +29,16 @@ export type Education = {
   end: string;
 };
 
+export type ApplicationRound = {
+  id: string;
+  company: string;
+  date: string;
+  source: string;
+  stage: string;
+  status: string;
+  note: string;
+};
+
 export type LinkItem = {
   id: string;
   label: string;
