@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/mongodb";
 import ResumeBuilder from "@/lib/models/ResumeBuilder";
+import { DESK_OWNER } from "@/lib/owner";
 
 type AccountPayload = {
   email?: string;
@@ -59,13 +60,13 @@ async function publishAccounts(): Promise<void> {
         $unset: { password: "" },
       },
     );
-    if (row.recordId === "owner" || row.recordId !== email) {
+    if (email === DESK_OWNER && (row.recordId === "owner" || row.recordId !== email)) {
       await ResumeBuilder.updateOne(
         { kind: "profile", recordId: "owner" },
         { $set: { recordId: email, userId: email } },
       );
       await ResumeBuilder.updateMany(
-        { kind: "resume", $or: [{ userId: { $exists: false } }, { userId: "" }, { userId: null }, { userId: "owner" }] },
+        { kind: "resume", userId: { $in: ["", "owner"] } },
         { $set: { userId: email } },
       );
     }
