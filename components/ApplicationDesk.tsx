@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { ApplicationRound } from "@/lib/types";
 
 const STAGES = ["Technical Round", "Assignment", "HR Round", "Final Round", "Applied"];
@@ -27,6 +27,93 @@ function statusClass(status: string): string {
   return key ? `status-${key}` : "status-open";
 }
 
+function RoundEditor({
+  draft,
+  setDraft,
+  rounds,
+  busy,
+  onSubmit,
+  editorRef,
+}: {
+  draft: ApplicationRound;
+  setDraft: (round: ApplicationRound | null) => void;
+  rounds: ApplicationRound[];
+  busy: boolean;
+  onSubmit: (event: FormEvent) => void;
+  editorRef: React.RefObject<HTMLFormElement | null>;
+}) {
+  const stageOptions = draft.stage && !STAGES.includes(draft.stage) ? [draft.stage, ...STAGES] : STAGES;
+  const statusOptions = draft.status && !STATUSES.includes(draft.status) ? [draft.status, ...STATUSES] : STATUSES;
+  return (
+    <form className="panel round-editor" ref={editorRef} onSubmit={onSubmit}>
+      <h2>{draft.id ? "Edit round" : draft.company ? `Add a round at ${draft.company}` : "New company"}</h2>
+      <div className="field">
+        <label htmlFor="application-company">Company</label>
+        <input
+          id="application-company"
+          type="text"
+          list="application-companies"
+          value={draft.company}
+          onChange={(event) => setDraft({ ...draft, company: event.target.value })}
+        />
+        <datalist id="application-companies">
+          {[...new Set(rounds.map((round) => round.company))].map((company) => (
+            <option key={company} value={company} />
+          ))}
+        </datalist>
+      </div>
+      <div className="split">
+        <div className="field">
+          <label htmlFor="application-date">Date</label>
+          <input id="application-date" type="date" value={draft.date} onChange={(event) => setDraft({ ...draft, date: event.target.value })} />
+        </div>
+        <div className="field">
+          <label htmlFor="application-source">Round</label>
+          <input
+            id="application-source"
+            type="text"
+            value={draft.source}
+            placeholder="2nd Round"
+            onChange={(event) => setDraft({ ...draft, source: event.target.value })}
+          />
+        </div>
+      </div>
+      <div className="split">
+        <div className="field">
+          <label htmlFor="application-stage">Stage</label>
+          <select id="application-stage" value={draft.stage} onChange={(event) => setDraft({ ...draft, stage: event.target.value })}>
+            <option value="">Not set</option>
+            {stageOptions.map((stage) => (
+              <option key={stage}>{stage}</option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor="application-status">Status</label>
+          <select id="application-status" value={draft.status} onChange={(event) => setDraft({ ...draft, status: event.target.value })}>
+            <option value="">Open</option>
+            {statusOptions.map((status) => (
+              <option key={status}>{status}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className="field">
+        <label htmlFor="application-note">Note</label>
+        <input id="application-note" type="text" value={draft.note} onChange={(event) => setDraft({ ...draft, note: event.target.value })} />
+      </div>
+      <div className="actions">
+        <button className="btn" type="submit" disabled={busy}>
+          {busy ? "Saving…" : "Save round"}
+        </button>
+        <button className="btn secondary" type="button" onClick={() => setDraft(null)}>
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export function ApplicationDesk() {
   const [rounds, setRounds] = useState<ApplicationRound[]>([]);
   const [ready, setReady] = useState(false);
@@ -35,6 +122,7 @@ export function ApplicationDesk() {
   const [filter, setFilter] = useState("All");
   const [draft, setDraft] = useState<ApplicationRound | null>(null);
   const [busy, setBusy] = useState(false);
+  const editorRef = useRef<HTMLFormElement>(null);
 
   async function refresh() {
     const response = await fetch("/api/applications");
@@ -56,6 +144,10 @@ export function ApplicationDesk() {
       cancel = true;
     };
   }, []);
+
+  useEffect(() => {
+    editorRef.current?.scrollIntoView({ block: "nearest" });
+  }, [draft?.id, draft?.company]);
 
   const companies = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -118,6 +210,7 @@ export function ApplicationDesk() {
       const response = await fetch(`/api/applications?id=${encodeURIComponent(round.id)}`, { method: "DELETE" });
       const data = (await response.json()) as { error?: string };
       if (!response.ok) throw new Error(data.error || "Could not delete that round.");
+      if (draft?.id === round.id) setDraft(null);
       await refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not delete that round.");
@@ -129,9 +222,7 @@ export function ApplicationDesk() {
   return (
     <div className="narrow applications-page">
       <h1>Applications</h1>
-      <p className="lede">
-        Each company stays in one place. Add another round when the same office calls you back.
-      </p>
+      <p className="lede">Each company stays in one place. Add another round when the same office calls you back.</p>
       <div className="examples">
         <button className="chip" type="button" data-active={filter === "All" || undefined} onClick={() => setFilter("All")}>
           All {rounds.length}
@@ -153,79 +244,15 @@ export function ApplicationDesk() {
         </button>
       </div>
 
-      {draft ? (
-        <form className="panel" onSubmit={save}>
-          <h2>{draft.id ? "Edit round" : draft.company ? `Add a round at ${draft.company}` : "New company"}</h2>
-          <div className="field">
-            <label htmlFor="application-company">Company</label>
-            <input
-              id="application-company"
-              type="text"
-              list="application-companies"
-              value={draft.company}
-              onChange={(event) => setDraft({ ...draft, company: event.target.value })}
-            />
-            <datalist id="application-companies">
-              {[...new Set(rounds.map((round) => round.company))].map((company) => (
-                <option key={company} value={company} />
-              ))}
-            </datalist>
-          </div>
-          <div className="split">
-            <div className="field">
-              <label htmlFor="application-date">Date</label>
-              <input id="application-date" type="date" value={draft.date} onChange={(event) => setDraft({ ...draft, date: event.target.value })} />
-            </div>
-            <div className="field">
-              <label htmlFor="application-source">Round</label>
-              <input
-                id="application-source"
-                type="text"
-                value={draft.source}
-                placeholder="2nd Round"
-                onChange={(event) => setDraft({ ...draft, source: event.target.value })}
-              />
-            </div>
-          </div>
-          <div className="split">
-            <div className="field">
-              <label htmlFor="application-stage">Stage</label>
-              <select id="application-stage" value={draft.stage} onChange={(event) => setDraft({ ...draft, stage: event.target.value })}>
-                <option value="">Not set</option>
-                {STAGES.map((stage) => (
-                  <option key={stage}>{stage}</option>
-                ))}
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="application-status">Status</label>
-              <select id="application-status" value={draft.status} onChange={(event) => setDraft({ ...draft, status: event.target.value })}>
-                <option value="">Open</option>
-                {STATUSES.map((status) => (
-                  <option key={status}>{status}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="field">
-            <label htmlFor="application-note">Note</label>
-            <input id="application-note" type="text" value={draft.note} onChange={(event) => setDraft({ ...draft, note: event.target.value })} />
-          </div>
-          <div className="actions">
-            <button className="btn" type="submit" disabled={busy}>
-              {busy ? "Saving…" : "Save round"}
-            </button>
-            <button className="btn secondary" type="button" onClick={() => setDraft(null)}>
-              Cancel
-            </button>
-          </div>
-        </form>
+      {draft && !draft.id && !draft.company ? (
+        <RoundEditor draft={draft} setDraft={setDraft} rounds={rounds} busy={busy} onSubmit={save} editorRef={editorRef} />
       ) : null}
 
       <div className="application-list">
         {companies.length === 0 ? <p className="empty">No applications match this search.</p> : null}
         {companies.map((list) => {
           const latest = list[list.length - 1];
+          const addingHere = Boolean(draft && !draft.id && draft.company.toLowerCase() === list[0].company.toLowerCase());
           return (
             <article className="card application-company" key={list[0].company.toLowerCase()}>
               <div className="application-head">
@@ -239,28 +266,41 @@ export function ApplicationDesk() {
                 <button
                   className="btn secondary"
                   type="button"
-                  onClick={() => setDraft({ ...emptyRound(list[0].company), source: `${list.length + 1}${list.length === 0 ? "st" : list.length === 1 ? "nd" : list.length === 2 ? "rd" : "th"} Round` })}
+                  onClick={() =>
+                    setDraft({
+                      ...emptyRound(list[0].company),
+                      source: `${list.length + 1}${list.length === 0 ? "st" : list.length === 1 ? "nd" : list.length === 2 ? "rd" : "th"} Round`,
+                    })
+                  }
                 >
                   Add round
                 </button>
               </div>
+              {addingHere && draft ? (
+                <RoundEditor draft={draft} setDraft={setDraft} rounds={rounds} busy={busy} onSubmit={save} editorRef={editorRef} />
+              ) : null}
               <div>
                 {list.map((round) => (
-                  <div className="round-row" key={round.id}>
-                    <time>{formatDate(round.date)}</time>
-                    <div>
-                      <strong>{[round.source, round.stage].filter(Boolean).join(" · ") || "Round"}</strong>
-                      {round.note ? <p className="hint">{round.note}</p> : null}
+                  <div key={round.id}>
+                    <div className="round-row">
+                      <time>{formatDate(round.date)}</time>
+                      <div>
+                        <strong>{[round.source, round.stage].filter(Boolean).join(" · ") || "Round"}</strong>
+                        {round.note ? <p className="hint">{round.note}</p> : null}
+                      </div>
+                      <span className={`pill ${statusClass(round.status)}`}>{round.status || "Open"}</span>
+                      <div className="round-actions">
+                        <button className="btn secondary" type="button" onClick={() => setDraft(round)}>
+                          Edit
+                        </button>
+                        <button className="btn danger" type="button" onClick={() => void remove(round)}>
+                          Delete
+                        </button>
+                      </div>
                     </div>
-                    <span className={`pill ${statusClass(round.status)}`}>{round.status || "Open"}</span>
-                    <div className="round-actions">
-                      <button className="btn secondary" type="button" onClick={() => setDraft(round)}>
-                        Edit
-                      </button>
-                      <button className="btn danger" type="button" onClick={() => void remove(round)}>
-                        Delete
-                      </button>
-                    </div>
+                    {draft?.id === round.id ? (
+                      <RoundEditor draft={draft} setDraft={setDraft} rounds={rounds} busy={busy} onSubmit={save} editorRef={editorRef} />
+                    ) : null}
                   </div>
                 ))}
               </div>
