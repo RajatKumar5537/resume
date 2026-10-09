@@ -16,32 +16,29 @@ type LibraryFolder = {
   files: LibraryFile[];
 };
 
-const LIBRARY_KEY = "desk-library";
+const LIBRARY_KEY = "desk-library-list";
 const openedFiles = new Map<string, string>();
 
-type SavedNote = { path: string; kind: "java" | "pdf"; text: string };
-type SavedLibrary = { revision: string; folders: LibraryFolder[]; notes: SavedNote[] };
+type SavedLibrary = { revision: string; folders: LibraryFolder[] };
 type LibraryResponse = Partial<SavedLibrary> & { unchanged?: boolean; error?: string };
 
 function rememberNote(path: string, kind: "java" | "pdf", text: string) {
   openedFiles.set(path, kind === "pdf" ? readableNote(text) : text);
 }
 
-function applySavedNotes(notes: SavedNote[]) {
-  openedFiles.clear();
-  for (const note of notes) rememberNote(note.path, note.kind, note.text || "");
-}
-
 function readSavedLibrary(): SavedLibrary | null {
   if (typeof window === "undefined") return null;
+  try {
+    localStorage.removeItem("desk-library");
+  } catch {
+    // The old copy stored every file. Dropping it keeps the next open fast.
+  }
   try {
     const raw = localStorage.getItem(LIBRARY_KEY);
     if (!raw) return null;
     const data = JSON.parse(raw) as Partial<SavedLibrary>;
-    if (!data.revision || !Array.isArray(data.folders) || !data.folders.length || !Array.isArray(data.notes) || !data.notes.length) {
-      return null;
-    }
-    return { revision: data.revision, folders: data.folders, notes: data.notes };
+    if (!data.revision || !Array.isArray(data.folders) || !data.folders.length) return null;
+    return { revision: data.revision, folders: data.folders };
   } catch {
     return null;
   }
@@ -63,10 +60,9 @@ async function pullLibrary(revision: string): Promise<LibraryResponse> {
 }
 
 function storeLibrary(data: LibraryResponse): SavedLibrary | null {
-  if (!data.revision || !data.folders?.length || !data.notes?.length) return null;
-  const saved = { revision: data.revision, folders: data.folders, notes: data.notes };
+  if (!data.revision || !data.folders?.length) return null;
+  const saved = { revision: data.revision, folders: data.folders };
   writeSavedLibrary(saved);
-  applySavedNotes(saved.notes);
   return saved;
 }
 
@@ -92,7 +88,6 @@ export function ProgramDesk() {
     const saved = readSavedLibrary();
     if (!saved) return;
     setFolders(saved.folders);
-    applySavedNotes(saved.notes);
     setLoadingList(false);
   }, []);
 
@@ -147,12 +142,16 @@ export function ProgramDesk() {
       openedFiles.clear();
       const saved = readSavedLibrary();
       const data = await pullLibrary(saved?.revision || "");
-      if (data.unchanged && saved) applySavedNotes(saved.notes);
       const next = data.unchanged ? null : storeLibrary(data);
       if (next) setFolders(next.folders);
       if (selected) {
-        const fresh = openedFiles.get(selected.path);
-        if (fresh !== undefined) setText(fresh);
+        const response = await fetch(`/api/library/file?path=${encodeURIComponent(selected.path)}`);
+        const opened = (await response.json()) as { text?: string };
+        if (response.ok && opened.text) {
+          const fresh = selected.kind === "pdf" ? readableNote(opened.text) : opened.text;
+          openedFiles.set(selected.path, fresh);
+          setText(fresh);
+        }
       }
       setRefreshNote(pending.length || plan.removed ? "Notes updated from your repo." : "Notes are already up to date.");
     } catch (caught) {

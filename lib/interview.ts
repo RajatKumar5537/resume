@@ -1,4 +1,4 @@
-import { loadInterviewNotes } from "@/lib/interview-library";
+import { listInterviewFiles, loadPdfNotes, readInterviewNote } from "@/lib/interview-library";
 
 const REPO = "RajatKumar5537/Java-Selenium-Program";
 const BRANCH = "master";
@@ -125,14 +125,14 @@ function questionTokens(question: string): { specific: string[]; weak: string[] 
 }
 
 async function catalog(): Promise<RepoEntry[]> {
-  const notes = await loadInterviewNotes();
-  if (!notes.length) throw new Error("Interview notes are not in the database yet.");
-  return notes.map((note) => ({
-    path: note.path,
-    name: note.title,
-    words: wordsFromPath(note.path),
-    kind: note.kind,
-    text: note.text,
+  const files = await listInterviewFiles();
+  if (!files.length) throw new Error("Interview notes are not in the database yet.");
+  return files.map((file) => ({
+    path: file.path,
+    name: file.title,
+    words: wordsFromPath(file.path),
+    kind: file.kind,
+    text: "",
   }));
 }
 
@@ -295,21 +295,32 @@ export async function answerInterview(question: string): Promise<InterviewResult
   const javaHit = !asksForOtherLanguage && known.length ? ranked.find((entry) => entry.kind === "java") : undefined;
 
   if (javaHit) {
-    const solved = solvedRank(asked);
-    return {
-      source: "repo",
-      title: titleFrom(javaHit),
-      path: javaHit.path,
-      url: fileUrl(javaHit.path),
-      code: javaHit.text,
-      answer: solved || undefined,
-      note: solved
-        ? "The number below is for the list in your question. The program is saved from your repo."
-        : "This program is saved from your repo, so it opens without waiting for Gemini.",
-    };
+    const note = await readInterviewNote(javaHit.path);
+    if (note?.text) {
+      const solved = solvedRank(asked);
+      return {
+        source: "repo",
+        title: titleFrom(javaHit),
+        path: javaHit.path,
+        url: fileUrl(javaHit.path),
+        code: note.text,
+        answer: solved || undefined,
+        note: solved
+          ? "The number below is for the list in your question. The program is saved from your repo."
+          : "This program is saved from your repo, so it opens without waiting for Gemini.",
+      };
+    }
   }
 
-  const pdfPick = !asksForOtherLanguage ? closestPdf(entries, specific) : undefined;
+  const pdfNotes = !asksForOtherLanguage ? await loadPdfNotes() : [];
+  const pdfEntries = pdfNotes.map((note) => ({
+    path: note.path,
+    name: note.title,
+    words: wordsFromPath(note.path),
+    kind: note.kind,
+    text: note.text,
+  }));
+  const pdfPick = pdfEntries.length ? closestPdf(pdfEntries, specific) : undefined;
   if (pdfPick?.entry.text.trim()) {
     return {
       source: "repo",

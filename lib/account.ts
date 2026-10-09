@@ -45,21 +45,24 @@ async function publishAccounts(): Promise<void> {
     const passwordHash = row.passwordHash || row.payload?.passwordHash || "";
     if (!email || !passwordHash.startsWith("$2")) continue;
     const name = (row.name || row.payload?.name || "").trim();
-    await ResumeBuilder.updateOne(
-      { _id: row._id },
-      {
-        $set: {
-          recordId: email,
-          userId: email,
-          email,
-          name,
-          passwordHash,
-          updatedAt: new Date().toISOString(),
-          payload: { email, name, passwordHash },
+    const aligned = row.recordId === email && row.userId === email && row.email === email && row.name === name && row.passwordHash === passwordHash;
+    if (!aligned) {
+      await ResumeBuilder.updateOne(
+        { _id: row._id },
+        {
+          $set: {
+            recordId: email,
+            userId: email,
+            email,
+            name,
+            passwordHash,
+            updatedAt: new Date().toISOString(),
+            payload: { email, name, passwordHash },
+          },
+          $unset: { password: "" },
         },
-        $unset: { password: "" },
-      },
-    );
+      );
+    }
     if (email === DESK_OWNER && (row.recordId === "owner" || row.recordId !== email)) {
       await ResumeBuilder.updateOne(
         { kind: "profile", recordId: "owner" },
@@ -107,7 +110,7 @@ export async function createAccount(input: { name: string; email: string; passwo
 export async function accountName(email: string): Promise<string> {
   const normalized = cleanEmail(email);
   if (!normalized) return "";
-  await ensureAccountsVisible();
+  await dbConnect();
   const row = await ResumeBuilder.findOne({ kind: "account", recordId: normalized }).lean<AccountRow>();
   return (row?.name || row?.payload?.name || "").trim();
 }

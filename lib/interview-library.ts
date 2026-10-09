@@ -15,10 +15,12 @@ type ListedFile = {
 };
 
 let cache: { revision: string; notes: StoredNote[] } | null = null;
+let pdfCache: { revision: string; notes: StoredNote[] } | null = null;
 let listCache: { revision: string; files: ListedFile[] } | null = null;
 
 export function clearInterviewNotesCache(): void {
   cache = null;
+  pdfCache = null;
   listCache = null;
 }
 
@@ -75,6 +77,27 @@ export async function readInterviewNote(path: string): Promise<StoredNote | null
   return { kind, path: row.path, title, text };
 }
 
+function notesFromRows(rows: { [key: string]: unknown }[]): StoredNote[] {
+  return rows.flatMap((row) => {
+    const file = listedFile(row);
+    const text = typeof row.text === "string" ? row.text.trim() : "";
+    if (!file || !text) return [];
+    return [{ ...file, text }];
+  });
+}
+
+export async function loadPdfNotes(): Promise<StoredNote[]> {
+  await dbConnect();
+  const revision = await revisionStamp();
+  if (pdfCache?.revision === revision && revision) return pdfCache.notes;
+  const rows = await notesCollection()
+    .find({ kind: "pdf", path: { $not: /^_/ } }, { projection: { path: 1, kind: 1, title: 1, text: 1 } })
+    .toArray();
+  const notes = notesFromRows(rows as { [key: string]: unknown }[]);
+  pdfCache = { revision, notes };
+  return notes;
+}
+
 export async function loadInterviewNotes(): Promise<StoredNote[]> {
   await dbConnect();
   const revision = await revisionStamp();
@@ -82,12 +105,7 @@ export async function loadInterviewNotes(): Promise<StoredNote[]> {
   const rows = await notesCollection()
     .find({ path: { $not: /^_/ } }, { projection: { path: 1, kind: 1, title: 1, text: 1 } })
     .toArray();
-  const notes = rows.flatMap((row) => {
-    const file = listedFile(row as { [key: string]: unknown });
-    const text = typeof row.text === "string" ? row.text.trim() : "";
-    if (!file || !text) return [];
-    return [{ ...file, text }];
-  });
+  const notes = notesFromRows(rows as { [key: string]: unknown }[]);
   cache = { revision, notes };
   return notes;
 }
