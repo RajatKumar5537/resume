@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ResumePaper } from "@/components/ResumePaper";
 import { resumeFilename, toPlainText } from "@/lib/plain";
-import { deleteResume, loadResumes, upsertResume } from "@/lib/storage";
+import { resumeHoursLeft } from "@/lib/resume-life";
+import { deleteResume, downloadOriginalResume, loadResumes, originalFileName, upsertResume } from "@/lib/storage";
 import type { ResumeDoc } from "@/lib/types";
 
 const PREFILL_KEY = "desk.prefill";
@@ -15,6 +16,7 @@ export function ResumeView({ id }: { id: string }) {
   const [ready, setReady] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
+  const [originalName, setOriginalName] = useState("");
 
   useEffect(() => {
     let cancel = false;
@@ -30,6 +32,13 @@ export function ResumeView({ id }: { id: string }) {
       })
       .finally(() => {
         if (!cancel) setReady(true);
+      });
+    originalFileName()
+      .then((name) => {
+        if (!cancel) setOriginalName(name);
+      })
+      .catch(() => {
+        if (!cancel) setOriginalName("");
       });
     return () => {
       cancel = true;
@@ -113,7 +122,7 @@ export function ResumeView({ id }: { id: string }) {
     return (
       <div className="narrow">
         <h1>This resume is not in your database.</h1>
-        <p className="lede">It may have been deleted, or it was saved in another browser before the move.</p>
+        <p className="lede">It may have been removed after 24 hours, or it was deleted.</p>
         <a className="btn" href="/">
           New resume
         </a>
@@ -129,6 +138,19 @@ export function ResumeView({ id }: { id: string }) {
           <button className="btn" type="button" onClick={savePdf}>
             Save PDF
           </button>
+          {originalName ? (
+            <button
+              className="btn secondary"
+              type="button"
+              onClick={() =>
+                downloadOriginalResume().catch((caught) =>
+                  setError(caught instanceof Error ? caught.message : "Could not download the original resume."),
+                )
+              }
+            >
+              Download original
+            </button>
+          ) : null}
           <button className="btn secondary" type="button" onClick={downloadText}>
             Download text
           </button>
@@ -186,9 +208,10 @@ export function ResumeView({ id }: { id: string }) {
             />
           </div>
           <p className="hint">
-            Written for this job from your master profile. Every skill you listed stays on the resume, with this
-            job’s skills first. Bullets that do not fit are left off, and tools you have not used are not added.
-            For job portals, paste the text version. For email, save a PDF.
+            {doc.writer === "ai"
+              ? "Written with AI for this job from your skills, experience, and projects. Tools you have not used are not added."
+              : "Every skill and every project from your master profile is on this resume, with this job’s skills first. Tools you have not used are not added."}
+            {` This resume is removed about ${resumeHoursLeft(doc.createdAt)} hours after it was created. Download the original from the master profile if you need to send that file instead.`}
           </p>
 
           <details className="block">

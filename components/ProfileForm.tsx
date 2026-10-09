@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { buildSummary } from "@/lib/tailor";
 import { needsMasterResume } from "@/lib/default-profile";
-import { exportBackup, loadProfile, parseBackup, replaceAll, saveProfile } from "@/lib/storage";
+import { downloadOriginalResume, exportBackup, loadProfile, originalFileName, parseBackup, replaceAll, saveProfile } from "@/lib/storage";
 import type { Education, LinkItem, Profile, Project, Role, SkillGroup } from "@/lib/types";
 
 function newId(): string {
@@ -15,6 +15,7 @@ export function ProfileForm() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [importing, setImporting] = useState(false);
+  const [originalName, setOriginalName] = useState("");
 
   useEffect(() => {
     let cancel = false;
@@ -24,6 +25,13 @@ export function ProfileForm() {
       })
       .catch((caught) => {
         if (!cancel) setError(caught instanceof Error ? caught.message : "Could not load the profile.");
+      });
+    originalFileName()
+      .then((name) => {
+        if (!cancel) setOriginalName(name);
+      })
+      .catch(() => {
+        if (!cancel) setOriginalName("");
       });
     return () => {
       cancel = true;
@@ -91,10 +99,11 @@ export function ProfileForm() {
       const body = new FormData();
       body.append("resume", file);
       const response = await fetch("/api/profile/import", { method: "POST", body });
-      const data = (await response.json()) as { profile?: Profile; error?: string };
+      const data = (await response.json()) as { profile?: Profile; originalName?: string; error?: string };
       if (!response.ok || !data.profile) throw new Error(data.error || "That resume could not be read.");
       setProfile(data.profile);
-      setMessage("Your resume is now the master profile. New job resumes use this, and nobody else's.");
+      setOriginalName(data.originalName || file.name);
+      setMessage("Your resume is now the master profile. The original file is saved here for download.");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "That resume could not be read.");
     } finally {
@@ -168,7 +177,19 @@ export function ProfileForm() {
               event.target.value = "";
             }}
           />
+          {originalName ? (
+            <button className="btn secondary" type="button" onClick={() => downloadOriginalResume().catch((caught) => setError(caught instanceof Error ? caught.message : "Could not download the original resume."))}>
+              Download original resume
+            </button>
+          ) : null}
         </div>
+        {originalName ? (
+          <p className="hint">Original file saved as {originalName}. Send this when a job resume is not the right fit.</p>
+        ) : !empty ? (
+          <p className="hint">
+            Upload this resume once more to keep the original file. You can then download it and send it straight away. The earlier upload was saved as profile text, not as the file.
+          </p>
+        ) : null}
       </section>
 
       <section className="editor-card">

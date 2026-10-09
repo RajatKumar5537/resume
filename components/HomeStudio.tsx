@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { deleteResume, loadProfile, loadResumes, upsertResume } from "@/lib/storage";
+import { deleteResume, loadProfile, loadResumes } from "@/lib/storage";
 import { needsMasterResume } from "@/lib/default-profile";
-import { tailor } from "@/lib/tailor";
+import { resumeHoursLeft } from "@/lib/resume-life";
 import { guessCompany, guessTitle, isJobLink } from "@/lib/text";
 import type { ResumeDoc } from "@/lib/types";
 
@@ -128,17 +128,16 @@ export function HomeStudio() {
     }
     setBusy(true);
     try {
-      const doc = tailor({
-        profile: await loadProfile(),
-        jobText,
-        jobTitle,
-        company,
-        jobUrl,
+      const response = await fetch("/api/resume/write", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jobText, jobTitle, company, jobUrl }),
       });
-      await upsertResume(doc);
-      router.push(`/r/${doc.id}`);
+      const data = (await response.json()) as { resume?: ResumeDoc; error?: string };
+      if (!response.ok || !data.resume) throw new Error(data.error || "Could not write this resume.");
+      router.push(`/r/${data.resume.id}`);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Could not save this resume.");
+      setError(caught instanceof Error ? caught.message : "Could not write this resume.");
       setBusy(false);
     }
   }
@@ -161,7 +160,7 @@ export function HomeStudio() {
       <p className="lede">
         {needsResume
           ? "Upload your own resume on the master profile. Desk writes every later job resume from that file, for a developer, a tester, or any other role."
-          : "Paste a job link or the full description. Desk writes a resume in your format from your master profile, puts this job’s skills first, and keeps the rest of your skills. Experience stays limited to what you already entered."}
+          : "Paste a job link or the full description. Desk uses AI to write an ATS resume from your master profile for that job. Every skill and every project stays on it. The generated resume is removed after 24 hours."}
       </p>
 
       {needsResume ? (
@@ -212,8 +211,8 @@ export function HomeStudio() {
           <p className="hint">{jobText.trim().length} characters. Check the title before writing the resume.</p>
           {error ? <p className="error">{error}</p> : null}
           <div className="actions">
-            <button className="btn" type="button" onClick={onWrite}>
-              Write resume
+            <button className="btn" type="button" onClick={onWrite} disabled={busy}>
+              {busy ? "Writing the resume…" : "Write resume"}
             </button>
             <button className="btn secondary" type="button" onClick={() => { setStep("paste"); setError(""); }}>
               Back
@@ -225,7 +224,7 @@ export function HomeStudio() {
       <h2 className="section-title" style={{ marginTop: 28 }}>
         Recent resumes
       </h2>
-      <p className="hint">Saved in your database. A backup file is still available on the master profile.</p>
+      <p className="hint">Each job resume is removed 24 hours after it is written. Your master profile stays.</p>
       {resumes.length === 0 ? (
         <p className="empty">No resumes yet. The first one will show up here.</p>
       ) : (
@@ -236,7 +235,7 @@ export function HomeStudio() {
                 <h2>{resume.jobTitle || resume.headline}</h2>
                 <p className="hint">
                   {[resume.company, formatWhen(resume.updatedAt)].filter(Boolean).join(" · ")}
-                  {` · ${resume.matched.length} skills matched`}
+                  {` · ${resume.matched.length} skills matched · removed in about ${resumeHoursLeft(resume.createdAt)}h`}
                 </p>
               </Link>
               <button className="btn danger" type="button" onClick={() => onDelete(resume.id)}>

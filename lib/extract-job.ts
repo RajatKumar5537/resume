@@ -149,11 +149,7 @@ export function extractJob(html: string): ExtractedJob {
     : trimJobText(stripHtml(main));
   const structuredText = structured ? trimJobText(structured.text) : "";
   const text =
-    description.length >= 80
-      ? description
-      : structuredText.length > description.length
-        ? structuredText
-        : description;
+    structuredText.length > description.length && structuredText.length >= 200 ? structuredText : description || structuredText;
 
   return {
     title: meta.title || structured?.title || "",

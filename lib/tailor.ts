@@ -107,7 +107,7 @@ function targetedSummary(profile: Profile, jd: string, targetTitle: string): str
     .filter((skill) => textHas(jd, skill) && !SOFT_SKILLS.has(skill.toLowerCase()))
     .sort((a, b) => firstIndex(jd, a) - firstIndex(jd, b))
     .filter((skill, index, all) => all.findIndex((item) => item.toLowerCase() === skill.toLowerCase()) === index)
-    .slice(0, 5);
+    .slice(0, 8);
   const themes = [
     { label: "test automation", jd: ["automation", "playwright", "selenium"], mine: ["automation", "playwright", "selenium"] },
     { label: "regression testing", jd: ["regression"], mine: ["regression"] },
@@ -150,7 +150,7 @@ export function buildSummary(profile: Profile, jd: string, targetTitle = ""): st
     .filter((skill) => textHas(jd, skill) && !SOFT_SKILLS.has(skill.toLowerCase()))
     .sort((a, b) => firstIndex(jd, a) - firstIndex(jd, b))
     .filter((skill, index, all) => all.findIndex((item) => item.toLowerCase() === skill.toLowerCase()) === index)
-    .slice(0, 5);
+    .slice(0, 8);
   const { domains, performance } = domainOrder(jd, skills);
   const years = profile.years.trim() || "5+";
   const identity = profile.identity.trim() || profile.headline.trim() || "QA Team Lead and SDET";
@@ -189,34 +189,12 @@ function scoreText(text: string, jd: string, skills: string[]): number {
   return score;
 }
 
-function alignBullet(bullet: string, jd: string): string {
-  let text = bullet.trim();
-  if (/automat/i.test(jd)) {
-    text = text.replace(/build and maintain (.+?) automation/i, "Develop automated test scripts with $1");
-  }
-  if (/report|test result/i.test(jd)) {
-    text = text.replace(/share clear test results with the team/i, "produce status reports for the team");
-  }
-  if (/defect/i.test(jd)) {
-    text = text.replace(/bug reports/i, "defect reports");
-  }
-  if (/regression/i.test(jd) && /feature/i.test(jd)) {
-    text = text.replace(/functional, regression, and sanity checks/i, "regression and feature testing");
-  }
-  return text.replace(/\s{2,}/g, " ").trim();
-}
-
-function selectBullets(bullets: string[], jd: string, skills: string[], limit: number): string[] {
-  const ranked = bullets
-    .map((bullet, index) => ({ bullet, index, score: scoreText(bullet, jd, skills) }))
-    .sort((a, b) => b.score - a.score || a.index - b.index);
-  const strong = ranked.filter((item) => item.score >= 5);
-  const picked = (strong.length ? strong : ranked.slice(0, 1)).slice(0, limit);
-  const best = picked[0]?.bullet;
-  const indexes = new Set(picked.map((item) => item.index));
-  const inOrder = bullets.filter((_, index) => indexes.has(index));
-  if (!best) return inOrder.map((bullet) => alignBullet(bullet, jd));
-  return [best, ...inOrder.filter((bullet) => bullet !== best)].map((bullet) => alignBullet(bullet, jd));
+function orderBullets(bullets: string[], jd: string, skills: string[]): string[] {
+  return bullets
+    .map((bullet, index) => ({ bullet: bullet.trim(), index, score: scoreText(bullet, jd, skills) }))
+    .filter((item) => item.bullet)
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map((item) => item.bullet);
 }
 
 function gapList(jd: string, skills: string[]): string[] {
@@ -256,40 +234,44 @@ export function tailor(input: {
     });
 
   const skillGroups = input.profile.skillGroups
-    .map((group) => {
+    .map((group, index) => {
       const items = group.items
         .map((label) => label.trim())
         .filter(Boolean)
         .map((label) => ({ label, hit: textHas(jd, label) }));
       return {
+        index,
+        hits: items.filter((item) => item.hit).length,
         name: group.name,
         items: [...items.filter((item) => item.hit), ...items.filter((item) => !item.hit)],
       };
     })
-    .filter((group) => group.items.length > 0);
+    .filter((group) => group.items.length > 0)
+    .sort((a, b) => b.hits - a.hits || a.index - b.index)
+    .map(({ name, items }) => ({ name, items }));
 
-  const experience = input.profile.experience.map((role, roleIndex) => ({
+  const experience = input.profile.experience.map((role) => ({
     title: role.title,
     company: role.company,
     location: role.location,
     start: role.start,
     end: role.end,
-    bullets: selectBullets(role.bullets.filter(Boolean), jd, skills, roleIndex === 0 ? 4 : 3),
+    bullets: orderBullets(role.bullets.filter(Boolean), jd, skills),
   }));
 
-  const rankedProjects = input.profile.projects
+  const projects = input.profile.projects
     .map((project, index) => ({
       project,
       index,
-      score: project.bullets.reduce((sum, bullet) => sum + scoreText(bullet, jd, skills), 0),
+      score:
+        project.bullets.reduce((sum, bullet) => sum + scoreText(bullet, jd, skills), 0) +
+        (textHas(jd, project.name) ? 6 : 0),
     }))
-    .sort((a, b) => b.score - a.score || a.index - b.index);
-  const chosenProjects = rankedProjects.filter((item) => item.score >= 6).slice(0, 3);
-
-  const projects = chosenProjects.map(({ project }) => ({
-    name: project.name,
-    bullets: selectBullets(project.bullets.filter(Boolean), jd, skills, 4),
-  }));
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map(({ project }) => ({
+      name: project.name,
+      bullets: orderBullets(project.bullets.filter(Boolean), jd, skills),
+    }));
 
   const jobTitle = input.jobTitle.trim().slice(0, 90);
   const now = new Date().toISOString();

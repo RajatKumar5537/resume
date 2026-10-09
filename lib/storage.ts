@@ -128,6 +128,30 @@ export function parseBackup(raw: string): BackupFile {
   };
 }
 
+export async function originalFileName(): Promise<string> {
+  const data = await request<{ fileName?: string }>("/api/profile/original?meta=1");
+  return data.fileName || "";
+}
+
+export async function downloadOriginalResume(): Promise<void> {
+  const response = await fetch("/api/profile/original");
+  const type = response.headers.get("Content-Type") || "";
+  if (!response.ok || type.includes("application/json")) {
+    const data = (await response.json().catch(() => ({}))) as { error?: string };
+    throw new Error(data.error || "Upload your resume on the master profile to keep the original file.");
+  }
+  const blob = await response.blob();
+  const header = response.headers.get("Content-Disposition") || "";
+  const match = /filename\*=UTF-8''([^;]+)|filename="([^"]+)"/i.exec(header);
+  const name = decodeURIComponent(match?.[1] || match?.[2] || "resume.pdf");
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = name;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 export async function replaceAll(backup: BackupFile): Promise<void> {
   await request("/api/resumes", {
     method: "PUT",

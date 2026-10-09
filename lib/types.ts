@@ -108,4 +108,5 @@ export type ResumeDoc = {
     location: string;
     links: LinkItem[];
   };
+  writer?: "ai" | "profile";
 };
