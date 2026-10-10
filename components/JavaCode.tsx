@@ -1,3 +1,6 @@
+import type { ReactNode } from "react";
+import { findRanges } from "@/lib/note-find";
+
 const CONTROL = new Set([
   "if",
   "else",
@@ -181,21 +184,57 @@ function highlightJava(code: string): Token[] {
   return tokens;
 }
 
-export function JavaCode({ code }: { code: string }) {
+function tokenNode(token: Token, key: string) {
+  if (token.kind === "plain") return <span key={key}>{token.text}</span>;
+  return (
+    <span key={key} className={`tok tok-${token.kind}`}>
+      {token.text}
+    </span>
+  );
+}
+
+export function JavaCode({ code, query = "", active = 0 }: { code: string; query?: string; active?: number }) {
   const tokens = highlightJava(code);
+  const ranges = findRanges(code, query);
+  const nodes: ReactNode[] = [];
+  let offset = 0;
+  tokens.forEach((token, tokenIndex) => {
+    const start = offset;
+    const end = offset + token.text.length;
+    offset = end;
+    const overlapping = ranges
+      .map((range, index) => ({ ...range, index }))
+      .filter((range) => range.start < end && range.end > start);
+    if (!overlapping.length) {
+      nodes.push(tokenNode(token, String(tokenIndex)));
+      return;
+    }
+    let cursor = 0;
+    overlapping.forEach((range) => {
+      const localStart = Math.max(0, range.start - start);
+      const localEnd = Math.min(token.text.length, range.end - start);
+      if (localStart > cursor) {
+        nodes.push(tokenNode({ ...token, text: token.text.slice(cursor, localStart) }, `${tokenIndex}-a-${cursor}`));
+      }
+      const current = range.index === active;
+      nodes.push(
+        <mark
+          key={`${tokenIndex}-m-${range.index}`}
+          className={current ? "note-hit note-hit-current" : "note-hit"}
+          {...(current ? { "data-note-focus": "true" } : {})}
+        >
+          {tokenNode({ ...token, text: token.text.slice(localStart, localEnd) }, `${tokenIndex}-h-${range.index}`)}
+        </mark>,
+      );
+      cursor = localEnd;
+    });
+    if (cursor < token.text.length) {
+      nodes.push(tokenNode({ ...token, text: token.text.slice(cursor) }, `${tokenIndex}-b`));
+    }
+  });
   return (
     <div className="code-scroll">
-      <pre className="answer-code">
-        {tokens.map((token, index) =>
-          token.kind === "plain" ? (
-            token.text
-          ) : (
-            <span key={index} className={`tok tok-${token.kind}`}>
-              {token.text}
-            </span>
-          ),
-        )}
-      </pre>
+      <pre className="answer-code">{nodes}</pre>
     </div>
   );
 }

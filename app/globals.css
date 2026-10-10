@@ -642,6 +642,8 @@ select {
   max-width: none;
   margin: 0;
   white-space: pre;
+  overflow-wrap: normal;
+  word-break: normal;
   overflow: visible;
   background: transparent;
   color: #d4d4d4;
@@ -737,9 +739,117 @@ select {
   overflow-wrap: anywhere;
   font-size: 17px;
   line-height: 1.7;
+  max-width: 100%;
 }
 
-.library-note p { margin: 0 0 8px; }
+.library-note p { margin: 0 0 0.85em; }
+
+.note-find {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  max-width: 100%;
+  margin: 0 0 12px;
+  padding: 8px 0;
+  background: var(--paper);
+}
+
+.note-find input {
+  flex: 1 1 140px;
+  min-width: 0;
+  min-height: 40px;
+  font-size: 16px;
+}
+
+.note-find button {
+  min-height: 40px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+}
+
+.note-find button:disabled { opacity: 0.45; }
+
+.note-find-count {
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.note-title {
+  margin: 0 0 14px;
+  font-size: 1.28em;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.note-toc {
+  margin: 0 0 16px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.note-toc summary {
+  cursor: pointer;
+  font-weight: 650;
+  min-height: 36px;
+}
+
+.note-toc nav { display: grid; gap: 2px; margin-top: 6px; }
+
+.note-toc button {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 6px 4px;
+  border-radius: 8px;
+  min-height: 36px;
+  overflow-wrap: anywhere;
+}
+
+.note-block,
+.note-item,
+.note-point,
+.note-q { max-width: 68ch; }
+
+.note-item {
+  margin: 0 0 0.4em;
+  padding-left: 1.15em;
+  text-indent: -1.15em;
+}
+
+.note-point {
+  padding-left: 10px;
+  border-left: 2px solid var(--line);
+}
+
+.note-section,
+.note-hit-current { scroll-margin-top: 72px; }
+
+.note-hit,
+.note-hit .tok {
+  background: #f3d36b;
+  color: #1a1814;
+  border-radius: 2px;
+}
+
+.note-hit-current,
+.note-hit-current .tok {
+  background: #e0a800;
+  color: #1a1814;
+  box-shadow: 0 0 0 2px #8a6a00;
+}
+
+.library-note .code-scroll { margin: 0 0 1em; }
 
 .note-q {
   margin: 18px 0 8px;
@@ -773,11 +883,254 @@ select {
 
 .read-bar { display: none; }
 
+.concepts-page .subject-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.concepts-page .subject-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-height: 132px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+  color: var(--ink);
+  text-align: left;
+}
+
+.concepts-page .subject-card strong { font-size: 1.05rem; }
+
+.concepts-page .subject-card span,
+.concepts-page .subject-note { color: var(--muted); }
+
+.concepts-page .subject-card[data-ready="true"] { border-color: var(--accent); }
+
+.concepts-page .programs-intro .btn { margin-bottom: 12px; }
+.concepts-page .subject-back { display: none; }
+
+@media (max-width: 700px) {
+  .concepts-page .subject-grid { grid-template-columns: 1fr; }
+}
+
 .update-row { margin: 0 0 12px; }
 
 .update-row .btn { min-height: 44px; }
 
 .read-title { display: block; }
+
+.concepts-page .library-note {
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.concepts-page .note-title {
+  font-size: 1.45rem;
+  line-height: 1.25;
+  margin-bottom: 6px;
+}
+
+.concepts-page .concept-search { margin: 0 0 12px; }
+
+.concepts-page .concept-search input,
+.concepts-page .note-find input {
+  min-height: 44px;
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.concepts-page .concept-search input { width: 100%; }
+
+.concepts-page .note-find input { flex: 1 1 140px; width: auto; }
+
+.concepts-page .note-find {
+  gap: 8px;
+  margin-bottom: 16px;
+  background: var(--paper);
+}
+
+.concepts-page .note-find button,
+.concepts-page .mode-switch button,
+.concepts-page .lesson-actions .btn {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--ink);
+}
+
+.concepts-page .note-find button:disabled { opacity: 0.45; }
+
+.concepts-page .mode-switch { display: flex; gap: 8px; margin: 0 0 16px; }
+
+.concepts-page .mode-switch button[data-active="true"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+.concepts-page .file-button[data-active="true"] {
+  background: var(--chip);
+  color: var(--ink);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.concepts-page .concept-group {
+  margin: 14px 10px 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.concepts-page .file-button { padding: 9px 10px 9px 14px; }
+
+.concepts-page .result-kind {
+  display: inline-block;
+  margin-right: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.concepts-page .lesson-kicker { color: var(--muted); font-size: 14px; line-height: 1.5; max-width: 68ch; }
+
+.concepts-page .lesson-lead {
+  margin: 14px 0 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--field);
+}
+
+.concepts-page .lesson-label {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.concepts-page .lesson-speak {
+  margin: 0;
+  max-width: 68ch;
+  font-size: 1.08rem;
+  line-height: 1.65;
+}
+
+.concepts-page .lesson-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.concepts-page .lesson-actions [role="status"] { color: var(--heading); font-weight: 650; }
+
+.concepts-page .lesson-block { margin-top: 8px; }
+
+.concepts-page .lesson-block .note-h { margin-top: 18px; }
+
+.concepts-page .lesson-output {
+  display: grid;
+  gap: 4px;
+  max-width: 68ch;
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--chip);
+  color: var(--ink);
+  white-space: pre-wrap;
+}
+
+.concepts-page .lesson-output span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.concepts-page .lesson-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.concepts-page .lesson-compare p {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--field);
+  max-width: none;
+}
+
+.concepts-page .lesson-compare strong { display: block; margin-bottom: 4px; }
+
+.concepts-page .lesson-compare-pair { display: contents; }
+
+.concepts-page .lesson-sheet { display: grid; gap: 10px; }
+
+.concepts-page .lesson-sheet > .lesson-kicker span { display: inline; font-size: inherit; font-weight: 700; color: var(--muted); }
+
+.concepts-page .lesson-sheet-row {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--field);
+}
+
+.concepts-page .lesson-sheet-row p { margin: 6px 0 0; max-width: 68ch; }
+
+.concepts-page .lesson-sheet-row span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.concepts-page .lesson-gap {
+  margin: 0 0 12px;
+  padding-left: 10px;
+  border-left: 2px solid var(--line);
+  color: var(--muted);
+}
+
+.concepts-page .lesson-q,
+.concepts-page .lesson-more {
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--field);
+}
+
+.concepts-page .lesson-q summary,
+.concepts-page .lesson-more summary { cursor: pointer; font-weight: 650; }
+
+.concepts-page .note-find button:focus-visible,
+.concepts-page .mode-switch button:focus-visible,
+.concepts-page .file-button:focus-visible,
+.concepts-page .concept-search input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media screen and (max-width: 700px) {
+  .concepts-page .lesson-compare { grid-template-columns: 1fr; }
+}
 
 @media screen and (max-width: 860px) {
   h1 { font-size: 34px; }
@@ -794,13 +1147,16 @@ select {
   .card { align-items: flex-start; }
 }
 
-/* Phone portrait: the notes fill the screen. The file list is a separate step. */
-@media screen and (orientation: portrait) and (max-width: 900px) {
+/* Phone portrait: the notes fill the screen. Shape uses the viewport size because iOS standalone does not apply orientation queries. */
+@media screen and (max-width: 900px) and (min-height: 501px) and (max-aspect-ratio: 1/1) {
   .library { grid-template-columns: 1fr; }
   .library-tree { max-height: none; }
-  .programs-page:not(.reading) .library-view { display: none; }
+  .programs-page:not(.reading) .library-view,
+  .concepts-page:not(.reading) .library-view { display: none; }
   .programs-page.reading .library-tree,
-  .programs-page.reading .programs-intro { display: none; }
+  .programs-page.reading .programs-intro,
+  .concepts-page.reading .library-tree,
+  .concepts-page.reading .programs-intro { display: none; }
   .interview-page:not(.reading) .interview-answer { display: none; }
   .interview-page.reading .interview-ask,
   .interview-page.reading .interview-intro { display: none; }
@@ -814,6 +1170,7 @@ select {
   .interview-page.reading .answer-text { font-size: 18px; line-height: 1.75; }
   .interview-page.reading .answer-code { font-size: 16px; line-height: 1.6; }
   .programs-page.reading .read-bar,
+  .concepts-page.reading .read-bar,
   .interview-page.reading .read-bar {
     display: flex;
     position: sticky;
@@ -855,9 +1212,14 @@ select {
   .library-view .answer-code { font-size: 16px; line-height: 1.6; }
   .file-button { font-size: 16px; padding: 12px 12px 12px 16px; }
   body:has(.programs-page.reading) .topbar,
+  body:has(.concepts-page.reading) .topbar,
   body:has(.interview-page.reading) .topbar { display: none; }
   .programs-page.reading .read-bar,
+  .concepts-page.reading .read-bar,
   .interview-page.reading .read-bar { top: env(safe-area-inset-top); }
+  .programs-page.reading .note-find,
+  .concepts-page.reading .note-find,
+  .interview-page.reading .note-find { top: calc(env(safe-area-inset-top) + 58px); }
 }
 
 /* Phone landscape: both cards fill the space under the header and stay aligned. */
@@ -866,6 +1228,7 @@ select {
   .programs-intro,
   .interview-intro { display: none; }
   body:has(.programs-page),
+  body:has(.concepts-page),
   body:has(.interview-page) {
     display: flex;
     flex-direction: column;
@@ -908,6 +1271,7 @@ select {
     font-size: 13px;
   }
   body:has(.programs-page) main,
+  body:has(.concepts-page) main,
   body:has(.interview-page) main {
     flex: 1 1 auto;
     display: flex;
@@ -920,6 +1284,7 @@ select {
     padding: 8px max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   }
   .programs-page,
+  .concepts-page,
   .interview-page {
     flex: 1 1 auto;
     display: flex;
@@ -955,10 +1320,42 @@ select {
     box-sizing: border-box;
   }
   .interview-ask textarea { min-height: 64px; }
-  .interview-page .answer-text { font-size: 16px; line-height: 1.65; }
+  .interview-page .answer-text { font-size: 18px; line-height: 1.75; }
   .interview-page .answer-code,
-  .library-view .answer-code { font-size: 14px; line-height: 1.6; }
-  .library-note { font-size: 16px; line-height: 1.65; }
+  .library-view .answer-code { font-size: 15px; line-height: 1.6; }
+  .library-note { font-size: 18px; line-height: 1.75; }
+  .note-find { padding-top: 4px; padding-bottom: 4px; }
+  .concepts-page .programs-intro {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+  }
+  .concepts-page:has(.library) .programs-intro { display: none; }
+  .concepts-page .programs-intro h1 { margin: 0 0 4px; font-size: 24px; }
+  .concepts-page .programs-intro .lede { margin: 0 0 8px; font-size: 14px; line-height: 1.35; }
+  .concepts-page .subject-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 0;
+  }
+  .concepts-page .subject-card {
+    min-height: 0;
+    padding: 8px 10px;
+    gap: 2px;
+    border-radius: 12px;
+  }
+  .concepts-page .subject-note { display: none; }
+  .concepts-page .library { grid-template-rows: auto minmax(0, 1fr); }
+  .concepts-page .subject-back {
+    display: inline-flex;
+    grid-column: 1 / -1;
+    justify-self: center;
+    min-height: 40px;
+    margin: 0;
+    padding: 6px 14px;
+  }
 }
 
 /* iPhone 14 is 390×844. This also covers 14 Pro (393) and 14 Plus (428). */

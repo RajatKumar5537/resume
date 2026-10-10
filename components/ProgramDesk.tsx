@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { JavaCode } from "@/components/JavaCode";
-import { NoteText, readableNote } from "@/components/PdfNote";
+import { NoteReader } from "@/components/NoteReader";
+import { clearOpenedNotes, openedNote, rememberOpenedNote, syncNoteCacheRevision } from "@/lib/opened-notes";
 
 type LibraryFile = {
   path: string;
@@ -17,14 +17,9 @@ type LibraryFolder = {
 };
 
 const LIBRARY_KEY = "desk-library-list";
-const openedFiles = new Map<string, string>();
 
 type SavedLibrary = { revision: string; folders: LibraryFolder[] };
 type LibraryResponse = Partial<SavedLibrary> & { unchanged?: boolean; error?: string };
-
-function rememberNote(path: string, kind: "java" | "pdf", text: string) {
-  openedFiles.set(path, kind === "pdf" ? readableNote(text) : text);
-}
 
 function readSavedLibrary(): SavedLibrary | null {
   if (typeof window === "undefined") return null;
@@ -56,6 +51,7 @@ async function pullLibrary(revision: string): Promise<LibraryResponse> {
   const response = await fetch(`/api/library?revision=${encodeURIComponent(revision)}`);
   const data = (await response.json()) as LibraryResponse;
   if (!response.ok) throw new Error(data.error || "Could not open the programs.");
+  if (data.revision) syncNoteCacheRevision(data.revision);
   return data;
 }
 
@@ -139,7 +135,7 @@ export function ProgramDesk() {
         const saved = (await saveResponse.json()) as { error?: string };
         if (!saveResponse.ok) throw new Error(saved.error || `Could not save ${name}.`);
       }
-      openedFiles.clear();
+      clearOpenedNotes();
       const saved = readSavedLibrary();
       const data = await pullLibrary(saved?.revision || "");
       const next = data.unchanged ? null : storeLibrary(data);
@@ -148,9 +144,8 @@ export function ProgramDesk() {
         const response = await fetch(`/api/library/file?path=${encodeURIComponent(selected.path)}`);
         const opened = (await response.json()) as { text?: string };
         if (response.ok && opened.text) {
-          const fresh = selected.kind === "pdf" ? readableNote(opened.text) : opened.text;
-          openedFiles.set(selected.path, fresh);
-          setText(fresh);
+          rememberOpenedNote(selected.path, selected.kind, opened.text);
+          setText(opened.text);
         }
       }
       setRefreshNote(pending.length || plan.removed ? "Notes updated from your repo." : "Notes are already up to date.");
@@ -168,9 +163,9 @@ export function ProgramDesk() {
     setShowFiles(false);
     window.scrollTo(0, 0);
     if (viewRef.current) viewRef.current.scrollTop = 0;
-    const saved = openedFiles.get(file.path);
-    if (saved !== undefined) {
-      setText(saved);
+    const saved = openedNote(file.path);
+    if (saved?.text) {
+      setText(saved.text);
       setLoadingFile(false);
       return;
     }
@@ -180,9 +175,9 @@ export function ProgramDesk() {
       const response = await fetch(`/api/library/file?path=${encodeURIComponent(file.path)}`);
       const data = (await response.json()) as { text?: string; error?: string };
       if (!response.ok) throw new Error(data.error || "Could not open that file.");
-      const next = file.kind === "pdf" ? readableNote(data.text || "") : data.text || "";
-      openedFiles.set(file.path, next);
-      setText(next);
+      if (!data.text) throw new Error("That file has no saved text.");
+      rememberOpenedNote(file.path, file.kind, data.text);
+      setText(data.text);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not open that file.");
     } finally {
@@ -196,7 +191,7 @@ export function ProgramDesk() {
         <h1>Programs</h1>
         <p className="lede">
           Pick a file. In portrait the notes fill the screen so you can read them out loud. Turn the phone sideways
-          to keep the file list beside the notes.
+          to keep the file list beside the notes. For a guided lesson, open <a href="/concepts">Java concepts</a>.
         </p>
         <p className="update-row">
           <button className="btn secondary" type="button" disabled={refreshing} onClick={() => void refreshNotes()}>
@@ -251,9 +246,9 @@ export function ProgramDesk() {
           </div>
           {!selected ? <p className="hint">Choose a file from the folder list.</p> : null}
           {selected && loadingFile ? <p className="hint">Opening {selected.name}…</p> : null}
-          {selected && !loadingFile ? <h2 className="read-title">{selected.name}</h2> : null}
-          {selected?.kind === "java" && text ? <JavaCode code={text} /> : null}
-          {selected?.kind === "pdf" && text ? <NoteText text={text} /> : null}
+          {selected && !loadingFile && text ? (
+            <NoteReader text={text} kind={selected.kind} title={selected.name.replace(/\.(java|pdf)$/i, "").replace(/[_-]+/g, " ")} />
+          ) : null}
         </section>
       </div>
     </div>

@@ -1,8 +1,9 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { JavaCode } from "@/components/JavaCode";
-import { NoteText, readableNote } from "@/components/PdfNote";
+import { NoteReader } from "@/components/NoteReader";
+import { searchLessons } from "@/lib/concepts";
+import { cachedAnswer, rememberAnswer, rememberOpenedNote, syncNoteCacheRevision } from "@/lib/opened-notes";
 
 type InterviewResult = {
   source: "repo" | "gemini" | "missing";
@@ -38,6 +39,23 @@ export function InterviewDesk() {
     setBusy(true);
     setError("");
     try {
+      try {
+        const savedLibrary = window.localStorage.getItem("desk-library-list");
+        if (savedLibrary) {
+          const revision = (JSON.parse(savedLibrary) as { revision?: string }).revision || "";
+          syncNoteCacheRevision(revision);
+        }
+      } catch {
+        // A damaged folder list should not block the interview search.
+      }
+      const cached = cachedAnswer(asked);
+      if (cached) {
+        setResult(cached);
+        setReading(true);
+        window.scrollTo(0, 0);
+        if (answerRef.current) answerRef.current.scrollTop = 0;
+        return;
+      }
       const response = await fetch("/api/interview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -45,6 +63,9 @@ export function InterviewDesk() {
       });
       const data = (await response.json()) as InterviewResult & { error?: string };
       if (!response.ok) throw new Error(data.error || "Could not answer that question.");
+      rememberAnswer(asked, data);
+      if (data.path && data.code) rememberOpenedNote(data.path, "java", data.code);
+      if (data.path?.toLowerCase().endsWith(".pdf") && data.answer) rememberOpenedNote(data.path, "pdf", data.answer);
       setResult(data);
       setReading(true);
       window.scrollTo(0, 0);
@@ -69,11 +90,13 @@ export function InterviewDesk() {
       pane.scrollLeft = 0;
       window.scrollTo(0, 0);
     } else {
-      const bar = pane.querySelector(".read-bar");
-      const offset = (bar?.getBoundingClientRect().height || 0) + 16;
+      const coverBottom = Math.max(
+        pane.querySelector(".note-find")?.getBoundingClientRect().bottom || 0,
+        pane.querySelector(".read-bar")?.getBoundingClientRect().bottom || 0,
+      );
       const paneScrolls = pane.scrollHeight > pane.clientHeight + 8;
-      const anchorTop = paneScrolls ? pane.getBoundingClientRect().top : 0;
-      const delta = target.getBoundingClientRect().top - anchorTop - offset;
+      const anchor = paneScrolls ? pane.getBoundingClientRect().top : 0;
+      const delta = target.getBoundingClientRect().top - Math.max(anchor, coverBottom) - 12;
       if (paneScrolls) pane.scrollTop += delta;
       else window.scrollBy(0, delta);
     }
@@ -142,6 +165,13 @@ export function InterviewDesk() {
             <strong className="read-title">{result.title}</strong>
           </div>
           <p className="hint">{result.note}</p>
+          {searchLessons(question)[0]?.score >= 120 ? (
+            <p>
+              <a href={`/concepts?topic=${searchLessons(question)[0].id}`}>
+                Open the {searchLessons(question)[0].title} lesson
+              </a>
+            </p>
+          ) : null}
           {result.url ? (
             <p>
               <a href={result.url} target="_blank" rel="noreferrer">
@@ -149,11 +179,11 @@ export function InterviewDesk() {
               </a>
             </p>
           ) : null}
-          {result.answer && result.path?.toLowerCase().endsWith(".pdf") ? (
-            <NoteText text={readableNote(result.answer)} focus={result.focus} />
+          {result.answer && result.code ? <p className="answer-text">{result.answer}</p> : null}
+          {result.code ? <NoteReader text={result.code} kind="java" title={result.title} /> : null}
+          {result.answer && !result.code ? (
+            <NoteReader text={result.answer} kind="pdf" title={result.code ? "" : result.title} focus={result.focus} />
           ) : null}
-          {result.answer && !result.path?.toLowerCase().endsWith(".pdf") ? <p className="answer-text">{result.answer}</p> : null}
-          {result.code ? <JavaCode code={result.code} /> : null}
         </section>
       ) : null}
       </div>

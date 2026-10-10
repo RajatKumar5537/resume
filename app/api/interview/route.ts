@@ -8,12 +8,12 @@ export async function POST(request: Request) {
   try {
     const userId = await requireUser();
     if (!userId) return NextResponse.json({ error: "Sign in to continue." }, { status: 401 });
-    const body = (await request.json()) as { question?: string };
+    const body = (await request.json()) as { question?: string; repoOnly?: boolean };
     const question = (body.question || "").trim();
     if (question.length > 1000) {
       return NextResponse.json({ error: "Keep the question under 1000 characters." }, { status: 400 });
     }
-    const result = await answerInterview(question);
+    const result = await answerInterview(question, { repoOnly: body.repoOnly === true });
     return NextResponse.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not answer that question.";

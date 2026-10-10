@@ -1,5 +1,6 @@
 "use client";
 
+import { syncNoteCacheUser } from "@/lib/opened-notes";
 import { signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -56,6 +57,10 @@ function ThemeToggle() {
 export function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const { data: session } = useSession();
+  const signedInEmail = session?.user?.email?.trim().toLowerCase() || "";
+  useEffect(() => {
+    syncNoteCacheUser(signedInEmail);
+  }, [signedInEmail]);
   if (path === "/login") {
     return (
       <>
@@ -90,6 +95,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </DeskLink>
           <DeskLink href="/interview" active={path.startsWith("/interview")}>
             Interview
+          </DeskLink>
+          <DeskLink href="/concepts" active={path.startsWith("/concepts")}>
+            Concepts
           </DeskLink>
           <DeskLink href="/applications" active={path.startsWith("/applications")}>
             Applications

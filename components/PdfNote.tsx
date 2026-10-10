@@ -30,6 +30,115 @@ export function isHeading(line: string): boolean {
   );
 }
 
+export type NoteBlock = {
+  kind: "heading" | "question" | "paragraph" | "item" | "point" | "code";
+  text: string;
+  id?: string;
+};
+
+function isItemLine(line: string): boolean {
+  const value = line.trim();
+  if (!value || isHeading(value) || isQuestion(value)) return false;
+  return /^(?:[•●▪◦]|[-–]|\d+[.)])\s+\S/.test(value);
+}
+
+function isPointLine(line: string): boolean {
+  return /^(?:A\.|example\s*[:.\-]|definition\s*[:.\-]|note\s*[:.\-]|important\s*[:.\-]|answer\s*[:.\-])/i.test(line.trim());
+}
+
+function isCodeLine(line: string): boolean {
+  const trimmed = line.trim();
+  if (!trimmed || isHeading(trimmed) || isQuestion(trimmed) || isItemLine(trimmed)) return false;
+  if (/^(import |package |public |private |protected |class |interface |enum |@\w+)/.test(trimmed)) return true;
+  if (/^(if|for|while|switch|catch|try|else|return|new|throw|int|long|double|float|boolean|char|String|var|final|static|void)\b/.test(trimmed) && /[(){};=]/.test(trimmed)) return true;
+  if (/^[{}();]+$/.test(trimmed)) return true;
+  if (/^\s{2,}\S/.test(line) && /[{}();=]/.test(line) && trimmed.split(/\s+/).length <= 14 && !trimmed.includes("?")) return true;
+  return false;
+}
+
+export function noteBlocks(text: string): NoteBlock[] {
+  const lines = text.replace(/\u00ad/g, "").replace(/\r/g, "").split("\n");
+  const blocks: NoteBlock[] = [];
+  let headingCount = 0;
+  let paragraph = "";
+  let code: string[] = [];
+
+  const flushParagraph = () => {
+    if (!paragraph) return;
+    blocks.push({ kind: "paragraph", text: paragraph });
+    paragraph = "";
+  };
+  const flushCode = () => {
+    if (!code.length) return;
+    blocks.push({ kind: "code", text: code.join("\n") });
+    code = [];
+  };
+  const pushLine = (value: string) => {
+    if (isHeading(value)) {
+      flushParagraph();
+      headingCount += 1;
+      blocks.push({ kind: "heading", text: value, id: `note-h-${headingCount}` });
+      return;
+    }
+    if (isQuestion(value)) {
+      flushParagraph();
+      blocks.push({ kind: "question", text: value });
+      return;
+    }
+    if (isItemLine(value)) {
+      flushParagraph();
+      blocks.push({ kind: "item", text: value });
+      return;
+    }
+    if (isPointLine(value)) {
+      flushParagraph();
+      blocks.push({ kind: "point", text: value });
+      return;
+    }
+    paragraph = paragraph ? `${paragraph} ${value}` : value;
+  };
+
+  for (const raw of lines) {
+    const trimmed = raw.trim().replace(/^/g, "•");
+    if (!trimmed) {
+      flushParagraph();
+      flushCode();
+      continue;
+    }
+    const continuesCode = code.length > 0 && (/^\s{2,}\S/.test(raw) || /^[{}();]+$/.test(trimmed));
+    if (isCodeLine(raw) || continuesCode) {
+      flushParagraph();
+      code.push(raw.replace(/\t/g, "    ").replace(/[ \t]+$/g, ""));
+      continue;
+    }
+    flushCode();
+    const glued = trimmed.match(/^((?:\d+[.)]\s*)?[A-Z][^.]{2,55}?(?:-:|:))\s+(\S.*)$/);
+    if (glued && isHeading(glued[1])) {
+      pushLine(glued[1]);
+      pushLine(glued[2]);
+      continue;
+    }
+    pushLine(trimmed);
+  }
+  flushParagraph();
+  flushCode();
+  return blocks;
+}
+
+export function focusBlockIndex(blocks: NoteBlock[], focus: string): number {
+  if (!focus) return -1;
+  let best = -1;
+  let rank = 0;
+  blocks.forEach((block, index) => {
+    const score = lineRank(block.text, focus);
+    if (score > rank) {
+      rank = score;
+      best = index;
+    }
+  });
+  return best;
+}
+
 export function readableNote(text: string): string {
   const lines = text.replace(/\u00ad/g, "").split(/\n/);
   const out: string[] = [];

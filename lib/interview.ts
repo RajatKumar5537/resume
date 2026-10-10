@@ -201,11 +201,18 @@ function titleFrom(entry: RepoEntry): string {
 function wordForms(token: string): string[] {
   const forms = [token];
   if (token.endsWith("s") && token.length > 4) forms.push(token.slice(0, -1));
-  return forms;
+  if (token === "oop" || token === "oops") forms.push("oop", "oops");
+  return [...new Set(forms)];
 }
 
 function hasWord(text: string, token: string): boolean {
   return wordForms(token).some((form) => new RegExp(`\\b${form}\\b`, "i").test(text));
+}
+
+function pathMatch(words: string[], token: string): "exact" | "alias" | "none" {
+  if (words.includes(token)) return "exact";
+  if (wordForms(token).some((form) => form !== token && words.includes(form))) return "alias";
+  return "none";
 }
 
 function sectionWord(text: string, token: string): boolean {
@@ -219,17 +226,61 @@ function closestPdf(entries: RepoEntry[], tokens: string[]): { entry: RepoEntry;
   const ranked = entries
     .filter((entry) => entry.kind === "pdf" && entry.text.trim())
     .map((entry) => {
-      const hits = tokens.filter((token) => token.length > 2 && (hasWord(entry.text, token) || entry.words.some((word) => wordForms(token).includes(word))));
-      const pathHits = hits.filter((token) => entry.words.some((word) => wordForms(token).includes(word))).length;
+      const hits = tokens.filter((token) => token.length > 2 && (hasWord(entry.text, token) || pathMatch(entry.words, token) !== "none"));
+      const pathHits = hits.filter((token) => pathMatch(entry.words, token) !== "none").length;
+      const exactPath = hits.filter((token) => pathMatch(entry.words, token) === "exact").length;
       const sectionHits = hits.filter((token) => sectionWord(entry.text, token)).length;
-      return { entry, hits, score: pathHits * 100 + sectionHits * 20 + hits.length };
+      return { entry, hits, exactPath, score: exactPath * 50 + pathHits * 100 + sectionHits * 20 + hits.length };
     })
     .filter((item) => item.hits.length > 0)
     .sort((a, b) => b.score - a.score || a.entry.path.localeCompare(b.entry.path));
-  const winner = ranked[0];
+  const exact = ranked.filter((item) => item.exactPath > 0);
+  const winner = (exact.length ? exact : ranked)[0];
   if (!winner) return undefined;
-  const focus = winner.hits.find((token) => sectionWord(winner.entry.text, token)) ?? winner.hits[0];
+  const token = winner.hits.find((item) => sectionWord(winner.entry.text, item)) ?? winner.hits[0];
+  const focus = surfaceForm(winner.entry, token);
   return { entry: winner.entry, focus };
+}
+
+function surfaceForm(entry: RepoEntry, token: string): string {
+  const forms = [token, ...wordForms(token).filter((form) => form !== token)];
+  return forms.find((form) => entry.words.includes(form) || new RegExp(`\\b${form}\\b`, "i").test(entry.text)) ?? token;
+}
+
+export function rankQuestion(
+  question: string,
+  files: { path: string; name?: string; kind: "java" | "pdf"; text?: string }[],
+): { javaPath: string; pdfPath: string; focus: string; solved: string; otherLanguage: boolean } {
+  const asked = question.trim();
+  const entries: RepoEntry[] = files.map((file) => ({
+    path: file.path,
+    name: file.name || file.path.split("/").pop() || file.path,
+    words: wordsFromPath(file.path),
+    kind: file.kind,
+    text: file.text || "",
+  }));
+  const { specific, weak } = questionTokens(asked);
+  const vocabulary = new Set(entries.flatMap((entry) => entry.words));
+  const otherLanguage = specific.some((token) => OTHER_LANGUAGES.has(token) && !vocabulary.has(token));
+  const known = specific.filter((token) => vocabulary.has(token));
+  const ranked = entries
+    .map((entry) => ({ ...entry, score: scoreEntry(entry, known, weak) }))
+    .filter((entry) => known.length > 0 && known.every((token) => entry.words.includes(token)))
+    .sort((a, b) => {
+      const byScore = b.score - a.score;
+      if (byScore !== 0) return byScore;
+      const extra = (entry: RepoEntry) => entry.words.filter((word) => !GENERIC.has(word) && !known.includes(word)).length;
+      return extra(a) - extra(b) || a.name.localeCompare(b.name);
+    });
+  const javaHit = !otherLanguage && known.length ? ranked.find((entry) => entry.kind === "java") : undefined;
+  const pdfPick = !otherLanguage && !javaHit ? closestPdf(entries, specific) : undefined;
+  return {
+    javaPath: javaHit?.path || "",
+    pdfPath: pdfPick?.entry.path || "",
+    focus: pdfPick?.focus || "",
+    solved: solvedRank(asked),
+    otherLanguage,
+  };
 }
 
 async function askGemini(question: string): Promise<string | null> {
@@ -275,61 +326,55 @@ async function askGemini(question: string): Promise<string | null> {
   throw new Error(lastError);
 }
 
-export async function answerInterview(question: string): Promise<InterviewResult> {
+export async function answerInterview(question: string, options?: { repoOnly?: boolean }): Promise<InterviewResult> {
   const asked = question.trim();
   if (asked.length < 3) throw new Error("Type an interview question.");
-  const { specific, weak } = questionTokens(asked);
   const entries = await catalog();
-  const vocabulary = new Set(entries.flatMap((entry) => entry.words));
-  const asksForOtherLanguage = specific.some((token) => OTHER_LANGUAGES.has(token) && !vocabulary.has(token));
-  const known = specific.filter((token) => vocabulary.has(token));
-  const ranked = entries
-    .map((entry) => ({ ...entry, score: scoreEntry(entry, known, weak) }))
-    .filter((entry) => known.length > 0 && known.every((token) => entry.words.includes(token)))
-    .sort((a, b) => {
-      const byScore = b.score - a.score;
-      if (byScore !== 0) return byScore;
-      const extra = (entry: RepoEntry) => entry.words.filter((word) => !GENERIC.has(word) && !known.includes(word)).length;
-      return extra(a) - extra(b) || a.name.localeCompare(b.name);
-    });
-  const javaHit = !asksForOtherLanguage && known.length ? ranked.find((entry) => entry.kind === "java") : undefined;
+  const ranked = rankQuestion(asked, entries);
 
-  if (javaHit) {
-    const note = await readInterviewNote(javaHit.path);
-    if (note?.text) {
-      const solved = solvedRank(asked);
+  if (!ranked.otherLanguage && ranked.javaPath) {
+    const note = await readInterviewNote(ranked.javaPath);
+    const javaHit = entries.find((entry) => entry.path === ranked.javaPath);
+    if (note?.text && javaHit) {
       return {
         source: "repo",
         title: titleFrom(javaHit),
         path: javaHit.path,
         url: fileUrl(javaHit.path),
         code: note.text,
-        answer: solved || undefined,
-        note: solved
+        answer: ranked.solved || undefined,
+        note: ranked.solved
           ? "The number below is for the list in your question. The program is saved from your repo."
           : "This program is saved from your repo, so it opens without waiting for Gemini.",
       };
     }
   }
 
-  const pdfNotes = !asksForOtherLanguage ? await loadPdfNotes() : [];
-  const pdfEntries = pdfNotes.map((note) => ({
-    path: note.path,
-    name: note.title,
-    words: wordsFromPath(note.path),
-    kind: note.kind,
-    text: note.text,
-  }));
-  const pdfPick = pdfEntries.length ? closestPdf(pdfEntries, specific) : undefined;
-  if (pdfPick?.entry.text.trim()) {
+  if (!ranked.otherLanguage) {
+    const pdfNotes = await loadPdfNotes();
+    const pdfRank = rankQuestion(
+      asked,
+      pdfNotes.map((note) => ({ path: note.path, name: note.title, kind: note.kind, text: note.text })),
+    );
+    const pdfPick = pdfNotes.find((note) => note.path === pdfRank.pdfPath);
+    if (pdfPick?.text.trim()) {
+      return {
+        source: "repo",
+        title: titleFrom({ name: pdfPick.title, path: pdfPick.path, words: [], kind: pdfPick.kind, text: pdfPick.text }),
+        path: pdfPick.path,
+        url: fileUrl(pdfPick.path),
+        answer: pdfPick.text,
+        focus: pdfRank.focus,
+        note: "Opened the saved PDF and moved to this word.",
+      };
+    }
+  }
+
+  if (options?.repoOnly) {
     return {
-      source: "repo",
-      title: titleFrom(pdfPick.entry),
-      path: pdfPick.entry.path,
-      url: fileUrl(pdfPick.entry.path),
-      answer: pdfPick.entry.text,
-      focus: pdfPick.focus,
-      note: "Opened the saved PDF and moved to this word.",
+      source: "missing",
+      title: "Not in your repo",
+      note: "No saved Java program or PDF matched this search.",
     };
   }
 
