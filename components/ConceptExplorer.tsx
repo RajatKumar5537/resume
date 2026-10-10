@@ -2,33 +2,11 @@
 
 import { JavaCode } from "@/components/JavaCode";
 import { NoteReader } from "@/components/NoteReader";
-import {
-  CONCEPT_GROUPS,
-  DEFAULT_CONCEPT_MODE,
-  conceptById,
-  conceptsInGroup,
-  searchLessons,
-  type ConceptLesson,
-  type ConceptSource,
-} from "@/lib/concepts";
+import type { ConceptLesson, ConceptSource } from "@/lib/concepts";
 import { findRanges } from "@/lib/note-find";
 import { openedNote, rememberOpenedNote } from "@/lib/opened-notes";
+import { cachedLesson, cachedSubject, loadSubjectPack, prefetchReadySubjects, readySubject, type SubjectPack } from "@/lib/subject-pack";
 import { STUDY_SUBJECTS, subjectById } from "@/lib/subjects";
-import { MANUAL_GROUPS, manualById, manualInGroup, searchManualLessons } from "@/lib/manual-lessons";
-import { MONGO_GROUPS, mongoById, mongoInGroup, searchMongoLessons } from "@/lib/mongo-lessons";
-import { REST_GROUPS, restById, restInGroup, searchRestLessons } from "@/lib/rest-assured-lessons";
-import { PLAYWRIGHT_GROUPS, playwrightById, playwrightInGroup, searchPlaywrightLessons } from "@/lib/playwright-lessons";
-import { SELENIUM_GROUPS, searchSeleniumLessons, seleniumById, seleniumInGroup } from "@/lib/selenium-lessons";
-
-function firstLessonId(subject: string): string {
-  if (subject === "selenium") return SELENIUM_GROUPS.flatMap((group) => seleniumInGroup(group.id).map((item) => item.id))[0] || "";
-  if (subject === "playwright") return PLAYWRIGHT_GROUPS.flatMap((group) => playwrightInGroup(group.id).map((item) => item.id))[0] || "";
-  if (subject === "manual-testing") return MANUAL_GROUPS.flatMap((group) => manualInGroup(group.id).map((item) => item.id))[0] || "";
-  if (subject === "mongodb") return MONGO_GROUPS.flatMap((group) => mongoInGroup(group.id).map((item) => item.id))[0] || "";
-  if (subject === "rest-assured") return REST_GROUPS.flatMap((group) => restInGroup(group.id).map((item) => item.id))[0] || "";
-  if (subject === "java") return CONCEPT_GROUPS.flatMap((group) => conceptsInGroup(group.id).map((item) => item.id))[0] || "";
-  return "";
-}
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
@@ -84,6 +62,7 @@ function LearnLesson({
   onCopy,
   onOpen,
   onSource,
+  lessonById,
 }: {
   lesson: ConceptLesson;
   query: string;
@@ -92,6 +71,7 @@ function LearnLesson({
   onCopy: (label: string, value: string) => void;
   onOpen: (id: string) => void;
   onSource: (index: number) => void;
+  lessonById: (id: string) => ConceptLesson | undefined;
 }) {
   const searching = query.trim().length >= 2;
   const cursor = { n: 0 };
@@ -274,7 +254,7 @@ function LearnLesson({
           <h3 className="note-h">Related concepts</h3>
           <div className="examples">
             {lesson.related.map((id) => {
-              const related = conceptById(id) || seleniumById(id) || playwrightById(id) || manualById(id) || mongoById(id) || restById(id);
+              const related = lessonById(id);
               if (!related) return null;
               return (
                 <button
@@ -313,9 +293,10 @@ export function ConceptExplorer() {
   const params = useSearchParams();
   const subjectId = params.get("subject") || "";
   const requested = params.get("topic") || "";
-  const knownTopic = (id: string) => Boolean(conceptById(id) || seleniumById(id) || playwrightById(id) || manualById(id) || mongoById(id) || restById(id));
-  const [topicId, setTopicId] = useState(requested && knownTopic(requested) ? requested : "");
-  const [mode, setMode] = useState<"learn" | "source">(DEFAULT_CONCEPT_MODE);
+  const [topicId, setTopicId] = useState(requested);
+  const [mode, setMode] = useState<"learn" | "source">("learn");
+  const [loadedPack, setLoadedPack] = useState<{ subject: string; pack: SubjectPack } | null>(null);
+  const pack = loadedPack?.subject === subjectId ? loadedPack.pack : null;
   const [showList, setShowList] = useState(!topicId);
   const [query, setQuery] = useState("");
   const [repoHit, setRepoHit] = useState<RepoHit | null>(null);
@@ -327,45 +308,32 @@ export function ConceptExplorer() {
   const [sourceLoading, setSourceLoading] = useState(false);
   const [copied, setCopied] = useState("");
   const viewRef = useRef<HTMLElement>(null);
-  const seleniumLibrary = subjectId === "selenium" || (!subjectId && Boolean(seleniumById(requested) || seleniumById(topicId)));
-  const playwrightLibrary = subjectId === "playwright" || (!subjectId && !seleniumLibrary && Boolean(playwrightById(requested) || playwrightById(topicId)));
-  const manualLibrary =
-    subjectId === "manual-testing" ||
-    (!subjectId && !seleniumLibrary && !playwrightLibrary && Boolean(manualById(requested) || manualById(topicId)));
-  const mongoLibrary =
-    subjectId === "mongodb" ||
-    (!subjectId && !seleniumLibrary && !playwrightLibrary && !manualLibrary && Boolean(mongoById(requested) || mongoById(topicId)));
-  const restLibrary =
-    subjectId === "rest-assured" ||
-    (!subjectId && !seleniumLibrary && !playwrightLibrary && !manualLibrary && !mongoLibrary && Boolean(restById(requested) || restById(topicId)));
-  const lesson = restLibrary
-    ? restById(topicId)
-    : mongoLibrary
-    ? mongoById(topicId)
-    : manualLibrary
-      ? manualById(topicId)
-      : playwrightLibrary
-        ? playwrightById(topicId)
-        : seleniumLibrary
-          ? seleniumById(topicId)
-          : conceptById(topicId);
+  const showingSelenium = subjectId === "selenium";
+  const showingPlaywright = subjectId === "playwright";
+  const showingManual = subjectId === "manual-testing";
+  const showingMongo = subjectId === "mongodb";
+  const showingRest = subjectId === "rest-assured";
+  const showingLibrary = readySubject(subjectId);
+  const lesson = pack?.byId(topicId);
   const lessonHits = useMemo(
-    () =>
-      query.trim().length >= 2
-        ? restLibrary
-          ? searchRestLessons(query)
-          : mongoLibrary
-          ? searchMongoLessons(query)
-          : manualLibrary
-            ? searchManualLessons(query)
-            : playwrightLibrary
-              ? searchPlaywrightLessons(query)
-              : seleniumLibrary
-                ? searchSeleniumLessons(query)
-                : searchLessons(query)
-        : [],
-    [query, seleniumLibrary, playwrightLibrary, manualLibrary, mongoLibrary, restLibrary],
+    () => (query.trim().length >= 2 && pack ? pack.search(query) : []),
+    [query, pack],
   );
+
+  useEffect(() => {
+    if (!showingLibrary) {
+      setLoadedPack(null);
+      const timer = window.setTimeout(() => prefetchReadySubjects(), 50);
+      return () => window.clearTimeout(timer);
+    }
+    let cancelled = false;
+    void loadSubjectPack(subjectId).then((loaded) => {
+      if (!cancelled) setLoadedPack({ subject: subjectId, pack: loaded });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [showingLibrary, subjectId]);
   useEffect(() => {
     if (!copied) return;
     const timer = window.setTimeout(() => setCopied(""), 2000);
@@ -373,25 +341,20 @@ export function ConceptExplorer() {
   }, [copied]);
 
   useEffect(() => {
-    if (requested && (conceptById(requested) || seleniumById(requested) || playwrightById(requested) || manualById(requested) || mongoById(requested) || restById(requested))) {
+    if (!showingLibrary || !pack) return;
+    if (requested && pack.byId(requested)) {
       setTopicId(requested);
-      setMode(DEFAULT_CONCEPT_MODE);
+      setMode("learn");
       setShowList(false);
       return;
     }
-    if (!requested) {
-      const first = firstLessonId(subjectId);
-      if (first) {
-        setTopicId(first);
-        setMode(DEFAULT_CONCEPT_MODE);
-        setShowList(false);
-        router.replace(`/concepts?subject=${encodeURIComponent(subjectId)}&topic=${encodeURIComponent(first)}`, { scroll: false });
-        return;
-      }
-      setTopicId("");
-      setShowList(true);
+    if (!requested && pack.firstId) {
+      setTopicId(pack.firstId);
+      setMode("learn");
+      setShowList(false);
+      router.replace(`/concepts?subject=${encodeURIComponent(subjectId)}&topic=${encodeURIComponent(pack.firstId)}`, { scroll: false });
     }
-  }, [requested, subjectId, router]);
+  }, [showingLibrary, pack, requested, subjectId, router]);
 
   useLayoutEffect(() => {
     if (!topicId) return;
@@ -465,11 +428,11 @@ export function ConceptExplorer() {
 
   function openLesson(id: string) {
     setTopicId(id);
-    setMode(DEFAULT_CONCEPT_MODE);
+    setMode("learn");
     setLooseSource(null);
     setSourceIndex(0);
     setShowList(false);
-    const subject = restById(id) ? "rest-assured" : mongoById(id) ? "mongodb" : manualById(id) ? "manual-testing" : playwrightById(id) ? "playwright" : seleniumById(id) ? "selenium" : "java";
+    const subject = cachedSubject(id) || (readySubject(subjectId) ? subjectId : "java");
     router.push(`/concepts?subject=${subject}&topic=${encodeURIComponent(id)}`, { scroll: false });
   }
 
@@ -481,19 +444,13 @@ export function ConceptExplorer() {
   }
 
   function openSubject(id: string) {
-    const first = firstLessonId(id);
     setQuery("");
-    setMode(DEFAULT_CONCEPT_MODE);
+    setMode("learn");
     setLooseSource(null);
-    if (!first) {
-      setTopicId("");
-      setShowList(true);
-      router.push(`/concepts?subject=${encodeURIComponent(id)}`);
-      return;
-    }
-    setTopicId(first);
+    setTopicId("");
     setShowList(false);
-    router.push(`/concepts?subject=${encodeURIComponent(id)}&topic=${encodeURIComponent(first)}`, { scroll: false });
+    void loadSubjectPack(id);
+    router.push(`/concepts?subject=${encodeURIComponent(id)}`, { scroll: false });
   }
 
   function openSource(source: ConceptSource) {
@@ -540,24 +497,11 @@ export function ConceptExplorer() {
     }
   }
 
-  const topicIsJava = Boolean(requested && conceptById(requested));
-  const topicIsSelenium = Boolean(requested && seleniumById(requested));
-  const topicIsPlaywright = Boolean(requested && playwrightById(requested));
-  const topicIsManual = Boolean(requested && manualById(requested));
-  const topicIsMongo = Boolean(requested && mongoById(requested));
-  const topicIsRest = Boolean(requested && restById(requested));
-  const showingJava = subjectId === "java" || (!subjectId && topicIsJava);
-  const showingSelenium = subjectId === "selenium" || (!subjectId && topicIsSelenium && !showingJava);
-  const showingPlaywright = subjectId === "playwright" || (!subjectId && topicIsPlaywright && !showingJava && !showingSelenium);
-  const showingManual = subjectId === "manual-testing" || (!subjectId && topicIsManual && !showingJava && !showingSelenium && !showingPlaywright);
-  const showingMongo = subjectId === "mongodb" || (!subjectId && topicIsMongo && !showingJava && !showingSelenium && !showingPlaywright && !showingManual);
-  const showingRest = subjectId === "rest-assured" || (!subjectId && topicIsRest && !showingJava && !showingSelenium && !showingPlaywright && !showingManual && !showingMongo);
-  const showingLibrary = showingJava || showingSelenium || showingPlaywright || showingManual || showingMongo || showingRest;
   const laterSubject = !showingLibrary && subjectId
     ? subjectById(subjectId) || { id: subjectId, title: "Subject", status: "later" as const, note: "This subject is not in the library yet." }
     : undefined;
-  const topicGroups = showingRest ? REST_GROUPS : showingMongo ? MONGO_GROUPS : showingManual ? MANUAL_GROUPS : showingPlaywright ? PLAYWRIGHT_GROUPS : showingSelenium ? SELENIUM_GROUPS : CONCEPT_GROUPS;
-  const topicsInGroup = showingRest ? restInGroup : showingMongo ? mongoInGroup : showingManual ? manualInGroup : showingPlaywright ? playwrightInGroup : showingSelenium ? seleniumInGroup : conceptsInGroup;
+  const topicGroups = pack?.groups || [];
+  const topicsInGroup = pack?.inGroup || (() => []);
   const repoVisible =
     Boolean(repoHit?.path) &&
     (showingRest
@@ -676,7 +620,7 @@ export function ConceptExplorer() {
             </button>
             <strong>{lesson?.title || libraryTitle}</strong>
           </div>
-          {!lesson ? <p className="hint">Choose a topic. Learn mode opens first.</p> : null}
+          {!lesson ? <p className="hint">{pack ? "Choose a topic. Learn mode opens first." : "Opening lessons…"}</p> : null}
           {lesson ? (
             <>
               <div className="mode-switch">
@@ -695,6 +639,7 @@ export function ConceptExplorer() {
                   copied={copied}
                   onCopy={(label, value) => void copyText(label, value)}
                   onOpen={openLesson}
+                  lessonById={cachedLesson}
                   onSource={(index) => {
                     setSourceIndex(index);
                     setLooseSource(null);
