@@ -641,7 +641,7 @@ select {
   color: #d4d4d4;
   border-radius: 0;
   padding: 14px;
-  font-size: 13px;
+  font-size: 11px;
   line-height: 1.45;
 }
 
@@ -870,7 +870,7 @@ select {
 .library-note .note-h:first-child { margin-top: 0; }
 
 .library-view .answer-code {
-  font-size: 15px;
+  font-size: 11px;
   line-height: 1.55;
 }
 
@@ -1162,7 +1162,7 @@ select {
     background: transparent;
   }
   .interview-page.reading .answer-text { font-size: 18px; line-height: 1.75; }
-  .interview-page.reading .answer-code { font-size: 16px; line-height: 1.6; }
+  .interview-page.reading .answer-code { font-size: 11px; line-height: 1.6; }
   .programs-page.reading .read-bar,
   .concepts-page.reading .read-bar,
   .interview-page.reading .read-bar {
@@ -1203,7 +1203,7 @@ select {
     background: transparent;
   }
   .library-note { font-size: 18px; line-height: 1.75; }
-  .library-view .answer-code { font-size: 16px; line-height: 1.6; }
+  .library-view .answer-code { font-size: 11px; line-height: 1.6; }
   .file-button { font-size: 16px; padding: 12px 12px 12px 16px; }
   body:has(.programs-page.reading) .topbar,
   body:has(.concepts-page.reading) .topbar,
@@ -1317,7 +1317,7 @@ select {
   .interview-ask textarea { min-height: 64px; }
   .interview-page .answer-text { font-size: 18px; line-height: 1.75; }
   .interview-page .answer-code,
-  .library-view .answer-code { font-size: 15px; line-height: 1.6; }
+  .library-view .answer-code { font-size: 11px; line-height: 1.6; }
   .library-note { font-size: 18px; line-height: 1.75; }
   .note-find { padding-top: 4px; padding-bottom: 4px; }
   .concepts-page .programs-intro {
