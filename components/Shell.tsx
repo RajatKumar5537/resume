@@ -95,18 +95,20 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <DeskLink href="/profile" active={path.startsWith("/profile")}>
             Master profile
           </DeskLink>
-          <DeskLink href="/interview" active={path.startsWith("/interview")}>
-            Interview
-          </DeskLink>
-          <DeskLink href="/concepts" active={path.startsWith("/concepts")}>
-            Concepts
-          </DeskLink>
-          <DeskLink href="/applications" active={path.startsWith("/applications")}>
-            Applications
-          </DeskLink>
-          <DeskLink href="/programs" active={path.startsWith("/programs")}>
-            Programs
-          </DeskLink>
+          <span className="nav-study">
+            <DeskLink href="/concepts" active={path.startsWith("/concepts")}>
+              Concepts
+            </DeskLink>
+            <DeskLink href="/programs" active={path.startsWith("/programs")}>
+              Programs
+            </DeskLink>
+            <DeskLink href="/interview" active={path.startsWith("/interview")}>
+              Interview
+            </DeskLink>
+            <DeskLink href="/applications" active={path.startsWith("/applications")}>
+              Applications
+            </DeskLink>
+          </span>
           <button
             className="nav-button"
             type="button"

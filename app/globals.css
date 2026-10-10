@@ -126,7 +126,14 @@ a { color: inherit; }
   white-space: nowrap;
 }
 
-.topbar nav { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.topbar nav { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+
+.nav-study {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+}
 
 .topbar nav a {
   text-decoration: none;
@@ -1231,7 +1238,7 @@ select {
     gap: 8px;
     min-width: 0;
     max-width: 100%;
-    overflow: hidden;
+    overflow: visible;
     padding: 4px 12px;
     padding-top: max(4px, env(safe-area-inset-top));
     padding-left: max(12px, env(safe-area-inset-left));
@@ -1244,18 +1251,19 @@ select {
     flex: 1 1 auto;
     flex-wrap: nowrap;
     justify-content: flex-end;
-    gap: 4px;
-    overflow-x: auto;
+    gap: 2px;
+    overflow: visible;
   }
+  .nav-study { gap: 2px; }
   .topbar nav a,
   .nav-button,
   .theme-toggle {
     position: relative;
     z-index: 1;
     flex: none;
-    min-height: 44px;
-    padding: 6px 10px;
-    font-size: 13px;
+    min-height: 36px;
+    padding: 4px 7px;
+    font-size: 12px;
   }
   body:has(.programs-page) main,
   body:has(.concepts-page) main,

@@ -66,35 +66,11 @@ function Highlight({
   return parts;
 }
 
-function lessonMatchCount(lesson: ConceptLesson, query: string): number {
-  const chunks = [
-    lesson.summary,
-    lesson.simple || "",
-    ...(lesson.points || []),
-    lesson.example?.code || "",
-    lesson.example?.output || "",
-    lesson.how || "",
-    lesson.compare?.title || "",
-    ...(lesson.compare?.rows?.length
-      ? lesson.compare.rows.flatMap((row) => [row.leftLabel, row.left, row.rightLabel, row.right])
-      : [lesson.compare?.leftLabel || "", lesson.compare?.left || "", lesson.compare?.rightLabel || "", lesson.compare?.right || ""]),
-    lesson.table?.title || "",
-    ...(lesson.table?.headers || []).slice(1),
-    ...(lesson.table?.rows || []).flat(),
-    ...(lesson.mistakes || []),
-    ...(lesson.questions || []).flatMap((item) => [item.prompt, item.short, item.detail]),
-  ];
-  return chunks.reduce((total, chunk) => total + findRanges(chunk, query).length, 0);
-}
-
 function LearnLesson({
   lesson,
   query,
   active,
   copied,
-  matchCount,
-  onQuery,
-  onStep,
   onCopy,
   onOpen,
   onSource,
@@ -103,9 +79,6 @@ function LearnLesson({
   query: string;
   active: number;
   copied: string;
-  matchCount: number;
-  onQuery: (value: string) => void;
-  onStep: (delta: number) => void;
   onCopy: (label: string, value: string) => void;
   onOpen: (id: string) => void;
   onSource: (index: number) => void;
@@ -148,23 +121,6 @@ function LearnLesson({
 
   return (
     <article className="library-note">
-      <div className="note-find">
-        <input
-          aria-label="Find in this lesson"
-          value={query}
-          placeholder="Find in this lesson"
-          onChange={(event) => onQuery(event.target.value)}
-        />
-        {searching ? (
-          <span className="note-find-count">{matchCount ? `${active + 1} of ${matchCount}` : "No matches"}</span>
-        ) : null}
-        <button type="button" onClick={() => onStep(-1)} disabled={!matchCount}>
-          Previous
-        </button>
-        <button type="button" onClick={() => onStep(1)} disabled={!matchCount}>
-          Next
-        </button>
-      </div>
       <div className="lesson-body">
       <h2 className="note-title">{lesson.title}</h2>
       <p className="lesson-kicker">{lesson.basis || "Prepared explanation. This is not copied from a PDF."}</p>
@@ -352,7 +308,6 @@ export function ConceptExplorer() {
   const [mode, setMode] = useState<"learn" | "source">(DEFAULT_CONCEPT_MODE);
   const [showList, setShowList] = useState(!topicId);
   const [query, setQuery] = useState("");
-  const [lessonFind, setLessonFind] = useState("");
   const [repoHit, setRepoHit] = useState<RepoHit | null>(null);
   const [searchError, setSearchError] = useState("");
   const [sourceIndex, setSourceIndex] = useState(0);
@@ -361,7 +316,6 @@ export function ConceptExplorer() {
   const [sourceError, setSourceError] = useState("");
   const [sourceLoading, setSourceLoading] = useState(false);
   const [copied, setCopied] = useState("");
-  const [findAt, setFindAt] = useState(0);
   const viewRef = useRef<HTMLElement>(null);
   const seleniumLibrary = subjectId === "selenium" || (!subjectId && Boolean(seleniumById(requested) || seleniumById(topicId)));
   const playwrightLibrary = subjectId === "playwright" || (!subjectId && !seleniumLibrary && Boolean(playwrightById(requested) || playwrightById(topicId)));
@@ -402,35 +356,11 @@ export function ConceptExplorer() {
         : [],
     [query, seleniumLibrary, playwrightLibrary, manualLibrary, mongoLibrary, restLibrary],
   );
-  const inLesson = lesson ? lessonMatchCount(lesson, lessonFind) : 0;
-  const findIndex = inLesson ? findAt % inLesson : 0;
-
-  useEffect(() => {
-    setFindAt(0);
-  }, [lessonFind, topicId]);
-
   useEffect(() => {
     if (!copied) return;
     const timer = window.setTimeout(() => setCopied(""), 2000);
     return () => window.clearTimeout(timer);
   }, [copied]);
-
-  useEffect(() => {
-    if (lessonFind.trim().length < 2) return;
-    const node = viewRef.current?.querySelector("[data-note-focus]");
-    const pane = viewRef.current;
-    if (!(node instanceof HTMLElement) || !pane) return;
-    const lessonBody = pane.querySelector(".lesson-body");
-    const scroller = lessonBody instanceof HTMLElement && lessonBody.scrollHeight > lessonBody.clientHeight + 8 ? lessonBody : pane;
-    const bar = pane.querySelector(".note-find");
-    const paneScrolls = scroller.scrollHeight > scroller.clientHeight + 8;
-    const anchor = paneScrolls ? scroller.getBoundingClientRect().top : 0;
-    const cover = Math.max(anchor, bar?.getBoundingClientRect().bottom || 0);
-    const delta = node.getBoundingClientRect().top - cover - 12;
-    if (Math.abs(delta) < 8) return;
-    if (paneScrolls) scroller.scrollTop += delta;
-    else window.scrollBy(0, delta);
-  }, [findIndex, lessonFind, topicId, mode]);
 
   useEffect(() => {
     if (requested && (conceptById(requested) || seleniumById(requested) || playwrightById(requested) || manualById(requested) || mongoById(requested) || restById(requested))) {
@@ -520,7 +450,6 @@ export function ConceptExplorer() {
     setMode(DEFAULT_CONCEPT_MODE);
     setLooseSource(null);
     setSourceIndex(0);
-    setLessonFind("");
     setShowList(false);
     const subject = restById(id) ? "rest-assured" : mongoById(id) ? "mongodb" : manualById(id) ? "manual-testing" : playwrightById(id) ? "playwright" : seleniumById(id) ? "selenium" : "java";
     router.push(`/concepts?subject=${subject}&topic=${encodeURIComponent(id)}`, { scroll: false });
@@ -530,7 +459,6 @@ export function ConceptExplorer() {
     setTopicId("");
     setShowList(true);
     setQuery("");
-    setLessonFind("");
     router.push("/concepts");
   }
 
@@ -732,15 +660,9 @@ export function ConceptExplorer() {
               {mode === "learn" ? (
                 <LearnLesson
                   lesson={lesson}
-                  query={lessonFind}
-                  active={findIndex}
+                  query=""
+                  active={0}
                   copied={copied}
-                  onQuery={setLessonFind}
-                  onStep={(delta) => {
-                    if (!inLesson) return;
-                    setFindAt((value) => (value + delta + inLesson) % inLesson);
-                  }}
-                  matchCount={inLesson}
                   onCopy={(label, value) => void copyText(label, value)}
                   onOpen={openLesson}
                   onSource={(index) => {
