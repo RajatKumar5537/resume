@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { NoteReader } from "@/components/NoteReader";
+import { loadLibraryList, type LibraryListResponse } from "@/lib/library-prefetch";
 import { clearOpenedNotes, openedNote, rememberOpenedNote, syncNoteCacheRevision } from "@/lib/opened-notes";
 
 type LibraryFile = {
@@ -21,7 +22,7 @@ type LibraryFolder = {
 const LIBRARY_KEY = "desk-library-list";
 
 type SavedLibrary = { revision: string; folders: LibraryFolder[] };
-type LibraryResponse = Partial<SavedLibrary> & { unchanged?: boolean; error?: string };
+type LibraryResponse = LibraryListResponse;
 
 function readSavedLibrary(): SavedLibrary | null {
   if (typeof window === "undefined") return null;
@@ -49,10 +50,8 @@ function writeSavedLibrary(saved: SavedLibrary) {
   }
 }
 
-async function pullLibrary(revision: string): Promise<LibraryResponse> {
-  const response = await fetch(`/api/library?revision=${encodeURIComponent(revision)}`);
-  const data = (await response.json()) as LibraryResponse;
-  if (!response.ok) throw new Error(data.error || "Could not open the programs.");
+async function pullLibrary(revision: string, fresh = false): Promise<LibraryResponse> {
+  const data = await loadLibraryList(revision, fresh);
   if (data.revision) syncNoteCacheRevision(data.revision);
   return data;
 }
@@ -141,7 +140,7 @@ export function ProgramDesk() {
       }
       clearOpenedNotes();
       const saved = readSavedLibrary();
-      const data = await pullLibrary(saved?.revision || "");
+      const data = await pullLibrary(saved?.revision || "", true);
       const next = data.unchanged ? null : storeLibrary(data);
       if (next) setFolders(next.folders);
       if (selected) {

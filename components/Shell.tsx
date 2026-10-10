@@ -1,5 +1,6 @@
 "use client";
 
+import { prefetchLibraryList } from "@/lib/library-prefetch";
 import { syncNoteCacheUser } from "@/lib/opened-notes";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -63,7 +64,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const signedInEmail = session?.user?.email?.trim().toLowerCase() || "";
   useEffect(() => {
     syncNoteCacheUser(signedInEmail);
-  }, [signedInEmail]);
+    if (signedInEmail && path !== "/login" && !path.startsWith("/programs")) prefetchLibraryList();
+  }, [signedInEmail, path]);
   if (path === "/login") {
     return (
       <>

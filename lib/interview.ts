@@ -441,6 +441,31 @@ function libraryError(error: unknown): never {
   throw error instanceof Error ? error : new Error(message);
 }
 
+function filesForMatch(saved: SavedProgram[], entries: RepoEntry[], pdfNotes: StoredNote[]) {
+  return [
+    ...saved.flatMap((program) =>
+      [program.title, ...program.aliases].map((alias) => ({
+        path: program.path,
+        name: alias,
+        kind: "java" as const,
+        origin: "mongodb" as const,
+        language: program.language,
+      })),
+    ),
+    ...entries
+      .filter((entry) => entry.kind === "java")
+      .map((entry) => ({ ...entry, origin: "github" as const, language: "java" })),
+    ...pdfNotes.map((note) => ({
+      path: note.path,
+      name: note.title,
+      kind: "pdf" as const,
+      text: note.text,
+      origin: "github" as const,
+      language: "java",
+    })),
+  ];
+}
+
 export async function answerInterview(
   question: string,
   options?: { repoOnly?: boolean; language?: string; generate?: boolean; owner?: string },
@@ -452,38 +477,24 @@ export async function answerInterview(
   let saved: SavedProgram[] = [];
   let pdfNotes: StoredNote[] = [];
   try {
-    entries = await catalog();
-    if (language === "auto") pdfNotes = await loadPdfNotes();
-    if (options?.owner) saved = await listSavedPrograms(options.owner);
+    const loaded = await Promise.all([
+      catalog(),
+      options?.owner ? listSavedPrograms(options.owner) : Promise.resolve([] as SavedProgram[]),
+    ]);
+    entries = loaded[0];
+    saved = loaded[1];
   } catch (error) {
     libraryError(error);
   }
-  const match = matchPrograms(
-    asked,
-    [
-      ...saved.flatMap((program) =>
-        [program.title, ...program.aliases].map((alias) => ({
-          path: program.path,
-          name: alias,
-          kind: "java" as const,
-          origin: "mongodb" as const,
-          language: program.language,
-        })),
-      ),
-      ...entries
-        .filter((entry) => entry.kind === "java")
-        .map((entry) => ({ ...entry, origin: "github" as const, language: "java" })),
-      ...pdfNotes.map((note) => ({
-        path: note.path,
-        name: note.title,
-        kind: "pdf" as const,
-        text: note.text,
-        origin: "github" as const,
-        language: "java",
-      })),
-    ],
-    language,
-  );
+  let match = matchPrograms(asked, filesForMatch(saved, entries, []), language);
+  if (!match.confidentPath && language === "auto" && !match.otherLanguage) {
+    try {
+      pdfNotes = await loadPdfNotes();
+    } catch (error) {
+      libraryError(error);
+    }
+    match = matchPrograms(asked, filesForMatch(saved, entries, pdfNotes), language);
+  }
   const savedHit = saved.find((program) => program.path === match.confidentPath);
   if (savedHit) {
     return {

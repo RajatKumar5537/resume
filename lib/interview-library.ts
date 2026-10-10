@@ -17,11 +17,13 @@ type ListedFile = {
 let cache: { revision: string; notes: StoredNote[] } | null = null;
 let pdfCache: { revision: string; notes: StoredNote[] } | null = null;
 let listCache: { revision: string; files: ListedFile[] } | null = null;
+let savedCache: { owner: string; revision: string; programs: SavedProgram[] } | null = null;
 
 export function clearInterviewNotesCache(): void {
   cache = null;
   pdfCache = null;
   listCache = null;
+  savedCache = null;
 }
 
 function notesCollection() {
@@ -74,10 +76,12 @@ export async function listSavedPrograms(ownerId: string): Promise<SavedProgram[]
   const owner = ownerId.trim().toLowerCase();
   if (!owner) return [];
   await dbConnect();
+  const revision = await revisionStamp();
+  if (savedCache && savedCache.owner === owner && savedCache.revision === revision && revision) return savedCache.programs;
   const rows = await notesCollection()
     .find({ kind: "saved", ownerId: owner }, { projection: { path: 1, title: 1, language: 1, text: 1, explanation: 1, aliases: 1 } })
     .toArray();
-  return rows.flatMap((row) => {
+  const programs = rows.flatMap((row) => {
     const path = typeof row.path === "string" ? row.path : "";
     const text = typeof row.text === "string" ? row.text.trim() : "";
     if (!path.startsWith("library/") || !text) return [];
@@ -91,10 +95,12 @@ export async function listSavedPrograms(ownerId: string): Promise<SavedProgram[]
       aliases,
     }];
   });
+  savedCache = { owner, revision, programs };
+  return programs;
 }
 
 export async function readInterviewNote(path: string): Promise<StoredNote | null> {
-  const saved = cache?.notes.find((note) => note.path === path);
+  const saved = cache?.notes.find((note) => note.path === path) || pdfCache?.notes.find((note) => note.path === path);
   if (saved) return saved;
   await dbConnect();
   const row = await notesCollection().findOne(
