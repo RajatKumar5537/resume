@@ -19,6 +19,16 @@ import { MONGO_GROUPS, mongoById, mongoInGroup, searchMongoLessons } from "@/lib
 import { REST_GROUPS, restById, restInGroup, searchRestLessons } from "@/lib/rest-assured-lessons";
 import { PLAYWRIGHT_GROUPS, playwrightById, playwrightInGroup, searchPlaywrightLessons } from "@/lib/playwright-lessons";
 import { SELENIUM_GROUPS, searchSeleniumLessons, seleniumById, seleniumInGroup } from "@/lib/selenium-lessons";
+
+function firstLessonId(subject: string): string {
+  if (subject === "selenium") return SELENIUM_GROUPS.flatMap((group) => seleniumInGroup(group.id).map((item) => item.id))[0] || "";
+  if (subject === "playwright") return PLAYWRIGHT_GROUPS.flatMap((group) => playwrightInGroup(group.id).map((item) => item.id))[0] || "";
+  if (subject === "manual-testing") return MANUAL_GROUPS.flatMap((group) => manualInGroup(group.id).map((item) => item.id))[0] || "";
+  if (subject === "mongodb") return MONGO_GROUPS.flatMap((group) => mongoInGroup(group.id).map((item) => item.id))[0] || "";
+  if (subject === "rest-assured") return REST_GROUPS.flatMap((group) => restInGroup(group.id).map((item) => item.id))[0] || "";
+  if (subject === "java") return CONCEPT_GROUPS.flatMap((group) => conceptsInGroup(group.id).map((item) => item.id))[0] || "";
+  return "";
+}
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
@@ -370,10 +380,18 @@ export function ConceptExplorer() {
       return;
     }
     if (!requested) {
+      const first = firstLessonId(subjectId);
+      if (first) {
+        setTopicId(first);
+        setMode(DEFAULT_CONCEPT_MODE);
+        setShowList(false);
+        router.replace(`/concepts?subject=${encodeURIComponent(subjectId)}&topic=${encodeURIComponent(first)}`, { scroll: false });
+        return;
+      }
       setTopicId("");
       setShowList(true);
     }
-  }, [requested]);
+  }, [requested, subjectId, router]);
 
   useLayoutEffect(() => {
     if (!topicId) return;
@@ -463,10 +481,19 @@ export function ConceptExplorer() {
   }
 
   function openSubject(id: string) {
-    setTopicId("");
-    setShowList(true);
+    const first = firstLessonId(id);
     setQuery("");
-    router.push(id === "java" ? "/concepts?subject=java" : `/concepts?subject=${encodeURIComponent(id)}`);
+    setMode(DEFAULT_CONCEPT_MODE);
+    setLooseSource(null);
+    if (!first) {
+      setTopicId("");
+      setShowList(true);
+      router.push(`/concepts?subject=${encodeURIComponent(id)}`);
+      return;
+    }
+    setTopicId(first);
+    setShowList(false);
+    router.push(`/concepts?subject=${encodeURIComponent(id)}&topic=${encodeURIComponent(first)}`, { scroll: false });
   }
 
   function openSource(source: ConceptSource) {
@@ -575,7 +602,6 @@ export function ConceptExplorer() {
       {showingLibrary ? (
         <>
       <div className="programs-intro">
-        <button className="btn secondary" type="button" onClick={openSubjects}>Back to subjects</button>
         <h1>{libraryTitle}</h1>
         <p className="lede">
           Learn mode is the default. Source mode opens the saved PDF or Java program. The original files stay in
@@ -583,7 +609,6 @@ export function ConceptExplorer() {
         </p>
       </div>
       <div className="library">
-        <button className="btn secondary subject-back" type="button" onClick={openSubjects}>Back to subjects</button>
         <aside className="library-tree" aria-label={showingRest ? "REST Assured topics" : showingMongo ? "MongoDB topics" : showingManual ? "Manual testing topics" : showingPlaywright ? "Playwright topics" : showingSelenium ? "Selenium topics" : "Java topics"}>
           <form
             className="concept-search"
@@ -592,6 +617,9 @@ export function ConceptExplorer() {
               void searchLibrary();
             }}
           >
+            <button className="subject-back" type="button" onClick={openSubjects} aria-label="Back to subjects">
+              ←
+            </button>
             <input
               aria-label="Search concepts"
               value={query}

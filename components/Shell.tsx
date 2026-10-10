@@ -2,6 +2,7 @@
 
 import { syncNoteCacheUser } from "@/lib/opened-notes";
 import { signOut, useSession } from "next-auth/react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -23,9 +24,9 @@ function DeskLink({
   children: React.ReactNode;
 }) {
   return (
-    <a href={href} className={className} data-active={active || undefined}>
+    <Link href={href} className={className} data-active={active || undefined} prefetch>
       {children}
-    </a>
+    </Link>
   );
 }
 

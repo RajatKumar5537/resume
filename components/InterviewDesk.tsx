@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { JavaCode } from "@/components/JavaCode";
 import { NoteReader } from "@/components/NoteReader";
@@ -311,9 +312,9 @@ export function InterviewDesk() {
           ) : null}
           {searchLessons(question)[0]?.score >= 120 ? (
             <p>
-              <a href={`/concepts?subject=java&topic=${searchLessons(question)[0].id}`}>
+              <Link href={`/concepts?subject=java&topic=${searchLessons(question)[0].id}`} prefetch>
                 Open the {searchLessons(question)[0].title} lesson
-              </a>
+              </Link>
             </p>
           ) : null}
           {result.url ? (

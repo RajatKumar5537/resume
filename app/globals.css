@@ -906,7 +906,29 @@ select {
 .concepts-page .subject-card[data-ready="true"] { border-color: rgba(45, 212, 191, 0.55); }
 
 .concepts-page .programs-intro .btn { margin-bottom: 12px; }
-.concepts-page .subject-back { display: none; }
+
+.concepts-page .concept-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.concepts-page .subject-back {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  min-height: 36px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+}
 
 @media (max-width: 700px) {
   .concepts-page .subject-grid { grid-template-columns: 1fr; }
@@ -929,7 +951,7 @@ select {
   margin-bottom: 6px;
 }
 
-.concepts-page .concept-search { margin: 0 0 12px; }
+.concepts-page .concept-search { margin: 0 0 8px; }
 
 .concepts-page .concept-search input,
 .concepts-page .note-find input {
@@ -942,7 +964,7 @@ select {
   padding: 8px 12px;
 }
 
-.concepts-page .concept-search input { width: 100%; }
+.concepts-page .concept-search input { flex: 1; width: auto; min-width: 0; }
 
 .concepts-page .note-find input { flex: 1 1 140px; width: auto; }
 
@@ -1342,7 +1364,7 @@ select {
     border-radius: 12px;
   }
   .concepts-page .subject-note { display: none; }
-  .concepts-page .library { grid-template-rows: auto minmax(0, 1fr); }
+  .concepts-page .subject-back { width: 32px; min-height: 32px; }
   .concepts-page .library-view {
     display: block;
     overflow-x: hidden;
@@ -1362,14 +1384,6 @@ select {
   }
   .concepts-page .note-title { margin-bottom: 8px; }
   .concepts-page .library-view > .lesson-actions { margin-top: 12px; }
-  .concepts-page .subject-back {
-    display: inline-flex;
-    grid-column: 1 / -1;
-    justify-self: center;
-    min-height: 40px;
-    margin: 0;
-    padding: 6px 14px;
-  }
 }
 
 /* iPhone 14 is 390×844. This also covers 14 Pro (393) and 14 Plus (428). */

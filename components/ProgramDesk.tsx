@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { NoteReader } from "@/components/NoteReader";
 import { clearOpenedNotes, openedNote, rememberOpenedNote, syncNoteCacheRevision } from "@/lib/opened-notes";
@@ -194,7 +195,7 @@ export function ProgramDesk() {
         <h1>Programs</h1>
         <p className="lede">
           Pick a file. In portrait the notes fill the screen so you can read them out loud. Turn the phone sideways
-          to keep the file list beside the notes. For a guided lesson, open <a href="/concepts">Java concepts</a>.
+          to keep the file list beside the notes. For a guided lesson, open <Link href="/concepts" prefetch>Java concepts</Link>.
         </p>
         <form
           className="panel interview-ask"
