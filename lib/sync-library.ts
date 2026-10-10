@@ -22,7 +22,7 @@ async function notes() {
   return mongoose.connection.collection("interview_notes");
 }
 
-async function bumpRevision(): Promise<void> {
+export async function bumpRevision(): Promise<void> {
   const updatedAt = new Date().toISOString();
   const collection = await notes();
   await collection.updateOne(

@@ -6,14 +6,18 @@ type OpenedNote = {
 };
 
 type CachedAnswer = {
-  source: "repo" | "gemini" | "missing";
+  source: "repo" | "gemini" | "missing" | "choices";
+  origin?: "mongodb" | "github";
   title: string;
   path?: string;
   url?: string;
   code?: string;
   answer?: string;
   focus?: string;
+  language?: string;
   note: string;
+  choices?: { path: string; title: string; origin: "mongodb" | "github" }[];
+  related?: { path: string; title: string; origin: "mongodb" | "github" }[];
 };
 
 const notes = new Map<string, OpenedNote>();

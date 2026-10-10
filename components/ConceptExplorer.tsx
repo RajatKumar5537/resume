@@ -165,6 +165,7 @@ function LearnLesson({
           Next
         </button>
       </div>
+      <div className="lesson-body">
       <h2 className="note-title">{lesson.title}</h2>
       <p className="lesson-kicker">{lesson.basis || "Prepared explanation. This is not copied from a PDF."}</p>
       <section className="lesson-lead">
@@ -336,6 +337,7 @@ function LearnLesson({
           ))}
         </section>
       ) : null}
+      </div>
     </article>
   );
 }
@@ -418,14 +420,15 @@ export function ConceptExplorer() {
     const node = viewRef.current?.querySelector("[data-note-focus]");
     const pane = viewRef.current;
     if (!(node instanceof HTMLElement) || !pane) return;
+    const lessonBody = pane.querySelector(".lesson-body");
+    const scroller = lessonBody instanceof HTMLElement && lessonBody.scrollHeight > lessonBody.clientHeight + 8 ? lessonBody : pane;
     const bar = pane.querySelector(".note-find");
-    const offset = (bar?.getBoundingClientRect().height || 0) + 12;
-    const paneScrolls = pane.scrollHeight > pane.clientHeight + 8;
-    const anchor = paneScrolls ? pane.getBoundingClientRect().top : 0;
+    const paneScrolls = scroller.scrollHeight > scroller.clientHeight + 8;
+    const anchor = paneScrolls ? scroller.getBoundingClientRect().top : 0;
     const cover = Math.max(anchor, bar?.getBoundingClientRect().bottom || 0);
     const delta = node.getBoundingClientRect().top - cover - 12;
     if (Math.abs(delta) < 8) return;
-    if (paneScrolls) pane.scrollTop += delta;
+    if (paneScrolls) scroller.scrollTop += delta;
     else window.scrollBy(0, delta);
   }, [findIndex, lessonFind, topicId, mode]);
 
@@ -447,6 +450,8 @@ export function ConceptExplorer() {
     const pane = viewRef.current;
     if (!pane) return;
     pane.scrollTop = 0;
+    const lessonBody = pane.querySelector(".lesson-body");
+    if (lessonBody instanceof HTMLElement) lessonBody.scrollTop = 0;
     const paneScrolls = pane.scrollHeight > pane.clientHeight + 8;
     if (!paneScrolls) {
       const topbar = document.querySelector(".topbar");

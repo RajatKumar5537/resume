@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { NoteReader } from "@/components/NoteReader";
 import { clearOpenedNotes, openedNote, rememberOpenedNote, syncNoteCacheRevision } from "@/lib/opened-notes";
 
@@ -63,6 +64,8 @@ function storeLibrary(data: LibraryResponse): SavedLibrary | null {
 }
 
 export function ProgramDesk() {
+  const router = useRouter();
+  const [programQuery, setProgramQuery] = useState("");
   const [folders, setFolders] = useState<LibraryFolder[]>([]);
   const [openId, setOpenId] = useState("java");
   const [selected, setSelected] = useState<LibraryFile | null>(null);
@@ -193,6 +196,24 @@ export function ProgramDesk() {
           Pick a file. In portrait the notes fill the screen so you can read them out loud. Turn the phone sideways
           to keep the file list beside the notes. For a guided lesson, open <a href="/concepts">Java concepts</a>.
         </p>
+        <form
+          className="panel interview-ask"
+          onSubmit={(event: FormEvent) => {
+            event.preventDefault();
+            const asked = programQuery.trim();
+            if (!asked) return;
+            router.push(`/interview?q=${encodeURIComponent(asked)}`);
+          }}
+        >
+          <label htmlFor="program-search">Search programs</label>
+          <input
+            id="program-search"
+            value={programQuery}
+            placeholder="Reverse a String"
+            onChange={(event) => setProgramQuery(event.target.value)}
+          />
+          <button className="btn" type="submit">Find program</button>
+        </form>
         <p className="update-row">
           <button className="btn secondary" type="button" disabled={refreshing} onClick={() => void refreshNotes()}>
             {refreshing ? "Updating…" : "Update notes"}

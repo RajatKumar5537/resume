@@ -40,7 +40,7 @@ export async function notesRevision(): Promise<string> {
 
 function listedFile(row: { [key: string]: unknown }): ListedFile | null {
   const path = typeof row.path === "string" ? row.path : "";
-  if (!path || path.startsWith("_")) return null;
+  if (!path || path.startsWith("_") || path.startsWith("library/") || row.kind === "saved") return null;
   const kind = row.kind === "pdf" ? "pdf" : "java";
   const title = typeof row.title === "string" && row.title.trim() ? row.title : path.split("/").pop() || path;
   return { kind, path, title };
@@ -59,6 +59,38 @@ export async function listInterviewFiles(): Promise<ListedFile[]> {
   });
   listCache = { revision, files };
   return files;
+}
+
+export type SavedProgram = {
+  path: string;
+  title: string;
+  language: string;
+  text: string;
+  explanation: string;
+  aliases: string[];
+};
+
+export async function listSavedPrograms(ownerId: string): Promise<SavedProgram[]> {
+  const owner = ownerId.trim().toLowerCase();
+  if (!owner) return [];
+  await dbConnect();
+  const rows = await notesCollection()
+    .find({ kind: "saved", ownerId: owner }, { projection: { path: 1, title: 1, language: 1, text: 1, explanation: 1, aliases: 1 } })
+    .toArray();
+  return rows.flatMap((row) => {
+    const path = typeof row.path === "string" ? row.path : "";
+    const text = typeof row.text === "string" ? row.text.trim() : "";
+    if (!path.startsWith("library/") || !text) return [];
+    const aliases = Array.isArray(row.aliases) ? row.aliases.filter((item) => typeof item === "string") : [];
+    return [{
+      path,
+      title: typeof row.title === "string" && row.title.trim() ? row.title : path,
+      language: typeof row.language === "string" && row.language.trim() ? row.language : "java",
+      text,
+      explanation: typeof row.explanation === "string" ? row.explanation : "",
+      aliases,
+    }];
+  });
 }
 
 export async function readInterviewNote(path: string): Promise<StoredNote | null> {

@@ -1,4 +1,4 @@
-import { listInterviewFiles, loadPdfNotes, readInterviewNote } from "@/lib/interview-library";
+import { listInterviewFiles, listSavedPrograms, loadPdfNotes, readInterviewNote, type SavedProgram, type StoredNote } from "@/lib/interview-library";
 
 const REPO = "RajatKumar5537/Java-Selenium-Program";
 const BRANCH = "master";
@@ -64,15 +64,25 @@ type RepoEntry = {
   text: string;
 };
 
+export type ProgramChoice = {
+  path: string;
+  title: string;
+  origin: "mongodb" | "github";
+};
+
 export type InterviewResult = {
-  source: "repo" | "gemini" | "missing";
+  source: "repo" | "gemini" | "missing" | "choices";
+  origin?: "mongodb" | "github";
   title: string;
   path?: string;
   url?: string;
   code?: string;
   answer?: string;
   focus?: string;
+  language?: string;
   note: string;
+  choices?: ProgramChoice[];
+  related?: ProgramChoice[];
 };
 
 const OTHER_LANGUAGES = new Set(["javascript", "typescript", "python", "csharp", "golang", "ruby", "php", "kotlin", "swift"]);
@@ -95,6 +105,12 @@ function wordsFromPath(path: string): string[] {
     .map(stem)
     .filter((word) => word.length > 2 && !["src", "main", "test", "java"].includes(word));
   return [...new Set(chunks)];
+}
+
+export function topicKey(value: string): string {
+  const { specific, weak } = questionTokens(value);
+  const kept = [...specific, ...weak.filter((word) => word === "string" || word === "array" || word === "number")];
+  return kept.join(" ") || value.toLowerCase().replace(/\s+/g, " ").trim();
 }
 
 function questionTokens(question: string): { specific: string[]; weak: string[] } {
@@ -283,33 +299,115 @@ export function rankQuestion(
   };
 }
 
-async function askGemini(question: string): Promise<string | null> {
+const CODE_LANGUAGES = new Set(["java", "javascript", "typescript", "python"]);
+
+function wantsCode(question: string, language: string): boolean {
+  if (language && language !== "auto") return true;
+  return /\b(program|code|algorithm|reverse|palindrome|fibonacci|prime|duplicate|sort|largest|occurrence|occurrences)\b/i.test(question);
+}
+
+export function matchPrograms(
+  question: string,
+  files: { path: string; name?: string; kind: "java" | "pdf"; text?: string; origin?: "mongodb" | "github"; language?: string }[],
+  language = "auto",
+): { confidentPath: string; origin: "mongodb" | "github" | ""; close: ProgramChoice[]; otherLanguage: boolean } {
+  const wanted = language.trim().toLowerCase() || "auto";
+  const saved = files.filter((file) => file.origin === "mongodb");
+  const repo = files.filter((file) => file.origin !== "mongodb");
+  const savedForLanguage = saved.filter((file) => wanted === "auto" || (file.language || "java") === wanted);
+  const savedRank = rankQuestion(
+    question,
+    savedForLanguage.map((file) => ({
+      path: `saved/${topicKey(file.name || file.path).replace(/ /g, "-")}.java`,
+      name: file.name,
+      kind: "java" as const,
+      text: file.text || "",
+    })),
+  );
+  const savedHit = savedForLanguage.find(
+    (file) => `saved/${topicKey(file.name || file.path).replace(/ /g, "-")}.java` === savedRank.javaPath,
+  );
+  const choice = (file: { path: string; name?: string; origin?: "mongodb" | "github" }): ProgramChoice => ({
+    path: file.path,
+    title: (file.name || file.path.split("/").pop() || file.path).replace(/\.(java|pdf)$/i, "").replace(/[_-]+/g, " "),
+    origin: file.origin === "mongodb" ? "mongodb" : "github",
+  });
+  if (savedHit) {
+    return { confidentPath: savedHit.path, origin: "mongodb", close: [], otherLanguage: false };
+  }
+  const skipRepo = wanted !== "auto" && wanted !== "java";
+  const ranked = skipRepo
+    ? { javaPath: "", pdfPath: "", focus: "", solved: "", otherLanguage: true }
+    : rankQuestion(question, repo);
+  const { specific } = questionTokens(question);
+  const partial = (file: { path: string; name?: string; origin?: "mongodb" | "github" }) => {
+    const words = wordsFromPath(file.origin === "mongodb" ? `saved/${topicKey(file.name || "").replace(/ /g, "-")}.java` : file.path);
+    const hits = specific.filter((token) => words.includes(token));
+    return hits.length > 0 && hits.length < specific.length ? hits.length : 0;
+  };
+  const close = [...saved, ...repo]
+    .map((file) => ({ file, score: partial(file) }))
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score || a.file.path.localeCompare(b.file.path))
+    .slice(0, 5)
+    .map((item) => choice(item.file));
+  if (!skipRepo && ranked.javaPath) {
+    return {
+      confidentPath: ranked.javaPath,
+      origin: "github",
+      close: close.filter((item) => item.path !== ranked.javaPath).slice(0, 4),
+      otherLanguage: false,
+    };
+  }
+  if (!skipRepo && wanted === "auto" && ranked.pdfPath) {
+    return {
+      confidentPath: ranked.pdfPath,
+      origin: "github",
+      close: close.filter((item) => item.path !== ranked.pdfPath).slice(0, 4),
+      otherLanguage: false,
+    };
+  }
+  if (skipRepo && ranked.otherLanguage) {
+    const javaRank = rankQuestion(question, repo);
+    const javaChoice = repo.find((file) => file.path === javaRank.javaPath);
+    const withJava = javaChoice && !close.some((item) => item.path === javaChoice.path) ? [choice(javaChoice), ...close] : close;
+    return { confidentPath: "", origin: "", close: withJava.slice(0, 5), otherLanguage: true };
+  }
+  return { confidentPath: "", origin: "", close, otherLanguage: ranked.otherLanguage };
+}
+
+async function askGemini(question: string, language: string): Promise<string | null> {
   const key = process.env.GEMINI_API_KEY || process.env.Gemini_API_Key;
   if (!key) return null;
+  const coding = wantsCode(question, language);
+  const named = CODE_LANGUAGES.has(language) ? language : "Java";
+  const system = coding
+    ? `Write a beginner-friendly ${named} solution. Use exactly these headings: Program title, Problem statement, Simple approach, Complete code, Explanation of important lines, Sample input, Sample output, Time complexity, Space complexity, Important edge cases. Put the code in one fenced block. Do not say the code was executed. Do not include secrets.`
+    : "You help a QA engineer practice interview answers. Use the language named in the question: JavaScript stays JavaScript, Python stays Python. If no language is named, use Java. Start with the answer they would say out loud. Add a short code example only when the question needs code. Be accurate and concise. Do not say the code was executed.";
   const models = ["gemini-3.8-flash", "gemini-2.5-flash"];
   let lastError = "Gemini could not answer this question.";
   for (const model of models) {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": key,
-        },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [
-              {
-                text: "You help a QA engineer practice interview answers. Use the language named in the question: JavaScript stays JavaScript, Python stays Python. If no language is named, use Java. Start with the answer they would say out loud. Add a short code example only when the question needs code. Be accurate and concise.",
-              },
-            ],
+    let response: Response;
+    try {
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": key,
           },
-          contents: [{ role: "user", parts: [{ text: question }] }],
-          generationConfig: { temperature: 0.3 },
-        }),
-      },
-    );
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: system }] },
+            contents: [{ role: "user", parts: [{ text: question }] }],
+            generationConfig: { temperature: coding ? 0.2 : 0.3 },
+          }),
+          signal: AbortSignal.timeout(25000),
+        },
+      );
+    } catch {
+      throw new Error("Gemini took too long. Retry in a moment.");
+    }
     const data = (await response.json()) as {
       error?: { message?: string; status?: string };
       candidates?: { content?: { parts?: { text?: string }[] } }[];
@@ -318,6 +416,7 @@ async function askGemini(question: string): Promise<string | null> {
       lastError = data.error?.message || lastError;
       continue;
     }
+    if (response.status === 429) throw new Error("Gemini is rate limited. Retry in a moment, or open a saved program.");
     if (!response.ok) throw new Error(data.error?.message || lastError);
     const answer = data.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("").trim();
     if (!answer) throw new Error("Gemini returned an empty answer.");
@@ -326,50 +425,121 @@ async function askGemini(question: string): Promise<string | null> {
   throw new Error(lastError);
 }
 
-export async function answerInterview(question: string, options?: { repoOnly?: boolean }): Promise<InterviewResult> {
+function splitGenerated(text: string): { code: string; explanation: string; title: string } {
+  const fenced = text.match(/```[a-zA-Z0-9]*\n([\s\S]*?)```/);
+  const code = fenced?.[1]?.trim() || "";
+  const explanation = (fenced ? text.replace(fenced[0], "") : text).trim();
+  const heading = explanation.match(/Program title\s*\n+([^\n]+)/i)?.[1]?.trim();
+  return { code, explanation, title: heading || "Generated program" };
+}
+
+function libraryError(error: unknown): never {
+  const message = error instanceof Error ? error.message : "Could not search the program library.";
+  if (/mongodb|ECONNREFUSED|querySrv|server selection/i.test(message)) {
+    throw new Error("The program library is unavailable. Retry in a moment.");
+  }
+  throw error instanceof Error ? error : new Error(message);
+}
+
+export async function answerInterview(
+  question: string,
+  options?: { repoOnly?: boolean; language?: string; generate?: boolean; owner?: string },
+): Promise<InterviewResult> {
   const asked = question.trim();
-  if (asked.length < 3) throw new Error("Type an interview question.");
-  const entries = await catalog();
-  const ranked = rankQuestion(asked, entries);
-
-  if (!ranked.otherLanguage && ranked.javaPath) {
-    const note = await readInterviewNote(ranked.javaPath);
-    const javaHit = entries.find((entry) => entry.path === ranked.javaPath);
-    if (note?.text && javaHit) {
+  if (asked.length < 3) throw new Error("Type a program name or question.");
+  const language = (options?.language || "auto").toLowerCase();
+  let entries: RepoEntry[] = [];
+  let saved: SavedProgram[] = [];
+  let pdfNotes: StoredNote[] = [];
+  try {
+    entries = await catalog();
+    if (language === "auto") pdfNotes = await loadPdfNotes();
+    if (options?.owner) saved = await listSavedPrograms(options.owner);
+  } catch (error) {
+    libraryError(error);
+  }
+  const match = matchPrograms(
+    asked,
+    [
+      ...saved.flatMap((program) =>
+        [program.title, ...program.aliases].map((alias) => ({
+          path: program.path,
+          name: alias,
+          kind: "java" as const,
+          origin: "mongodb" as const,
+          language: program.language,
+        })),
+      ),
+      ...entries
+        .filter((entry) => entry.kind === "java")
+        .map((entry) => ({ ...entry, origin: "github" as const, language: "java" })),
+      ...pdfNotes.map((note) => ({
+        path: note.path,
+        name: note.title,
+        kind: "pdf" as const,
+        text: note.text,
+        origin: "github" as const,
+        language: "java",
+      })),
+    ],
+    language,
+  );
+  const savedHit = saved.find((program) => program.path === match.confidentPath);
+  if (savedHit) {
+    return {
+      source: "repo",
+      origin: "mongodb",
+      title: savedHit.title,
+      path: savedHit.path,
+      language: savedHit.language,
+      code: savedHit.text,
+      answer: savedHit.explanation || undefined,
+      note: "Found in MongoDB. This saved program is reused, so Gemini was not called.",
+      related: match.close,
+    };
+  }
+  if (match.origin === "github" && match.confidentPath) {
+    const note = await readInterviewNote(match.confidentPath);
+    const hit = entries.find((entry) => entry.path === match.confidentPath);
+    if (note?.text && hit) {
+      const pdf = hit.kind === "pdf";
       return {
         source: "repo",
-        title: titleFrom(javaHit),
-        path: javaHit.path,
-        url: fileUrl(javaHit.path),
-        code: note.text,
-        answer: ranked.solved || undefined,
-        note: ranked.solved
-          ? "The number below is for the list in your question. The program is saved from your repo."
-          : "This program is saved from your repo, so it opens without waiting for Gemini.",
+        origin: "github",
+        title: titleFrom(hit),
+        path: hit.path,
+        url: fileUrl(hit.path),
+        code: pdf ? undefined : note.text,
+        answer: pdf ? note.text : rankQuestion(asked, entries).solved || undefined,
+        focus: pdf ? rankQuestion(asked, pdfNotes.map((item) => ({ path: item.path, name: item.title, kind: item.kind, text: item.text }))).focus : undefined,
+        language: "java",
+        note: pdf
+          ? "Found in GitHub. Opened the synced note and moved to this word. Gemini was not called."
+          : "Found in GitHub. This program is already in the synced repo, so Gemini was not called.",
+        related: match.close,
       };
     }
   }
-
-  if (!ranked.otherLanguage) {
-    const pdfNotes = await loadPdfNotes();
-    const pdfRank = rankQuestion(
-      asked,
-      pdfNotes.map((note) => ({ path: note.path, name: note.title, kind: note.kind, text: note.text })),
-    );
-    const pdfPick = pdfNotes.find((note) => note.path === pdfRank.pdfPath);
-    if (pdfPick?.text.trim()) {
+  if (options?.repoOnly || (!options?.generate && match.close.length)) {
+    if (options?.repoOnly && !match.close.length) {
       return {
-        source: "repo",
-        title: titleFrom({ name: pdfPick.title, path: pdfPick.path, words: [], kind: pdfPick.kind, text: pdfPick.text }),
-        path: pdfPick.path,
-        url: fileUrl(pdfPick.path),
-        answer: pdfPick.text,
-        focus: pdfRank.focus,
-        note: "Opened the saved PDF and moved to this word.",
+        source: "missing",
+        title: "Not in your repo",
+        note: "No saved Java program or PDF matched this search.",
+      };
+    }
+    if (match.close.length) {
+      return {
+        source: "choices",
+        title: "Closest programs",
+        note: options?.repoOnly
+          ? "No exact program matched. These saved files are the closest."
+          : "No exact program matched. Open one of these, or generate a new explanation.",
+        choices: match.close,
+        language,
       };
     }
   }
-
   if (options?.repoOnly) {
     return {
       source: "missing",
@@ -377,20 +547,23 @@ export async function answerInterview(question: string, options?: { repoOnly?: b
       note: "No saved Java program or PDF matched this search.",
     };
   }
-
-  const chat = await askGemini(asked);
+  const chat = await askGemini(asked, language);
   if (!chat) {
     return {
       source: "missing",
-      title: "Not in your repo",
-      note: "This question is not in your saved notes. Add a free Gemini API key in GEMINI_API_KEY.",
+      title: "Not in your library",
+      note: "This program is not in the synced library. Add a Gemini API key in GEMINI_API_KEY, or retry after saving a program.",
+      choices: match.close,
     };
   }
-
+  const generated = splitGenerated(chat);
   return {
     source: "gemini",
-    title: "Gemini",
-    answer: chat,
-    note: "This question was not in your saved notes. This answer is from Gemini.",
+    title: generated.title,
+    code: generated.code || undefined,
+    answer: generated.explanation || chat,
+    language: CODE_LANGUAGES.has(language) ? language : "java",
+    note: "Generated by Gemini. It was not run. Save it if you want the next search to reuse it.",
+    related: match.close,
   };
 }

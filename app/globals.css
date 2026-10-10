@@ -1335,6 +1335,53 @@ select {
   }
   .concepts-page .subject-note { display: none; }
   .concepts-page .library { grid-template-rows: auto minmax(0, 1fr); }
+  .concepts-page .library-view {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 8px 10px;
+  }
+  .concepts-page .library-view > .mode-switch,
+  .concepts-page .library-view > .lesson-actions,
+  .concepts-page .library-view > .read-bar {
+    flex: none;
+  }
+  .concepts-page .mode-switch { margin-bottom: 8px; }
+  .concepts-page .library-view > .lesson-actions { margin-top: 8px; }
+  .concepts-page .library-view > .library-note,
+  .concepts-page .library-view > div {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+  }
+  .concepts-page .library-view > div:has(.library-note) {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .concepts-page .library-view > .library-note:has(.lesson-body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .concepts-page .library-note:has(.lesson-body) .note-find {
+    position: static;
+    top: auto;
+    flex: none;
+    flex-wrap: nowrap;
+    margin: 0 0 8px;
+    padding: 0 0 8px;
+    background: var(--bg);
+  }
+  .concepts-page .library-note:has(.lesson-body) .note-find button { flex: none; }
+  .concepts-page .lesson-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
   .concepts-page .subject-back {
     display: inline-flex;
     grid-column: 1 / -1;

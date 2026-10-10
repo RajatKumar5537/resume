@@ -8,7 +8,10 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 type Match = { block: number; start: number; end: number };
 
 function scrollMatch(node: HTMLElement) {
-  const pane = node.closest(".library-view, .interview-answer");
+  const lessonBody = node.closest(".lesson-body");
+  const pane = lessonBody instanceof HTMLElement && lessonBody.scrollHeight > lessonBody.clientHeight + 8
+    ? lessonBody
+    : node.closest(".library-view, .interview-answer");
   if (!(pane instanceof HTMLElement)) {
     node.scrollIntoView({ block: "center", inline: "nearest" });
     return;
@@ -150,6 +153,7 @@ export function NoteReader({
           Next
         </button>
       </div>
+      <div className="lesson-body">
       {title ? <h2 className="note-title">{title}</h2> : null}
       {headings.length >= 3 ? (
         <details className="note-toc">
@@ -209,6 +213,7 @@ export function NoteReader({
             );
           })
         : null}
+      </div>
     </div>
   );
 }
