@@ -44,6 +44,8 @@ function ThemeToggle() {
     const next = currentTheme() === "dark" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", next);
     localStorage.setItem("desk-theme", next);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", next === "light" ? "#eef0f8" : "#000000");
     setTheme(next);
   }
 

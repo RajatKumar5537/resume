@@ -25,8 +25,20 @@ assert.equal(searchSeleniumLessons("xpath")[0]?.id, "se-xpath");
 assert.equal(searchSeleniumLessons("findElement")[0]?.id, "se-find-element");
 assert.equal(searchSeleniumLessons("alert")[0]?.id, "se-alerts");
 assert.equal(searchSeleniumLessons("TestNG")[0]?.id, "se-testng-annotations");
+assert.equal(searchSeleniumLessons("fails in jenkins")[0]?.id, "se-ci-failure");
+assert.equal(searchSeleniumLessons("threadlocal")[0]?.id, "se-thread-local");
+assert.equal(searchSeleniumLessons("framework architecture")[0]?.id, "se-framework");
+assert.equal(searchSeleniumLessons("release readiness")[0]?.id, "se-release-lead");
+assert.equal(searchSeleniumLessons("smoke and regression")[0]?.id, "se-cicd");
+assert.equal(searchSeleniumLessons("parallel execution")[0]?.id, "se-parallel");
 assert.equal(searchSeleniumLessons("reverse a string using javascript").length, 0);
 assert.equal(searchLessons("OOP")[0]?.id, "oop-overview");
 assert.equal(searchLessons("findElement").length, 0);
+
+const advanced = SELENIUM_CONCEPTS.filter((lesson) => lesson.group === "se-advanced");
+assert.ok(advanced.length >= 8);
+for (const lesson of advanced) {
+  assert.ok((lesson.questions?.length || 0) > 0, lesson.id);
+}
 
 console.log(`selenium checks passed (${SELENIUM_CONCEPTS.length} lessons)`);

@@ -25,19 +25,16 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#e7e1d6" },
-    { media: "(prefers-color-scheme: dark)", color: "#141210" },
-  ],
+  themeColor: "#000000",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${sans.variable} ${serif.variable}`}>
+    <html lang="en" className={`${sans.variable} ${serif.variable}`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem("desk-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);}catch(e){}`,
+            __html: `try{var t=localStorage.getItem("desk-theme");document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark");}catch(e){}`,
           }}
         />
       </head>

@@ -1,4 +1,5 @@
 import type { ConceptGroupId, ConceptLesson } from "./concepts";
+import { ADVANCED } from "./selenium-advanced";
 
 const BASIS = "Prepared interview explanation. It is not a quotation from a saved PDF or Java file.";
 const SEL = "Interview_PDF/SELENIUM.pdf";
@@ -16,6 +17,7 @@ export const SELENIUM_GROUPS: { id: ConceptGroupId; title: string }[] = [
   { id: "se-parallel", title: "Parallel Execution and Grid" },
   { id: "se-exceptions", title: "Exceptions" },
   { id: "se-pages", title: "Dynamic Elements and Page Objects" },
+  { id: "se-advanced", title: "Advanced Selenium and SDET" },
 ];
 
 const PROGRAMS = [
@@ -299,11 +301,18 @@ FileUtils.copyFile(source, destination);`,
       "WebUtilities.java contains the saved screenshot helper.",
     ],
     how: "The saved note builds the destination as a ScreenShot directory and passes it to copyFile. copyFile expects a file. The corrected example uses screenshot.png.",
+    questions: [
+      {
+        prompt: "How do you capture evidence when a test fails?",
+        short: "I save a screenshot and the exception text with the test name. Browser console logs help when the page failed in script rather than in a locator.",
+        detail: "I attach that evidence to the report. I do not rely on a screenshot that was taken only after the browser had already closed.",
+      },
+    ],
     sources: [
       ...pdf("SELENIUM.pdf, page 4", SEL, "screenshot"),
       javaFile("src/main/java/Selenium/WebUtilities.java"),
     ],
-    related: ["se-webdriver-methods", "se-excel"],
+    related: ["se-webdriver-methods", "se-excel", "se-ci-failure"],
   },
   {
     id: "se-waits",
@@ -333,8 +342,15 @@ Alert alert = wait.until(ExpectedConditions.alertIsPresent());`,
       "The saved explicit examples use Duration.ofSeconds. That is Selenium 4 syntax.",
     ],
     how: "The saved note calls fluent wait an explicit wait that checks repeatedly. It does not include a FluentWait code sample. A FluentWait can set withTimeout, pollingEvery, and ignoring(NoSuchElementException.class). ExpectedConditions.presenceOfElementLocated means the element is in the DOM. visibility means it is displayed.",
+    questions: [
+      {
+        prompt: "How do you use explicit waits correctly?",
+        short: "I wait for the condition the next step needs, such as visible or clickable. I keep the timeout near the real response time.",
+        detail: "A fixed sleep does not know that the page is ready. A long implicit wait plus an explicit wait can make a failure look slower than it is.",
+      },
+    ],
     sources: pdf("SELENIUM.pdf, pages 4-5", SEL, "implicit"),
-    related: ["se-ajax", "se-exceptions", "se-dynamic"],
+    related: ["se-ajax", "se-exceptions", "se-dynamic", "se-suite-speed"],
   },
   {
     id: "se-alerts",
@@ -839,8 +855,30 @@ public void testInMultipleBrowsers(String browser) {
       "The corrected method keeps the driver local.",
     ],
     how: "The saved suite is named Parallel Browser Suite. It has Chrome Test, Firefox Test, and Edge Test. The class name in the note is ParallelTest. Quit belongs in finally so a failed get() still closes the browser.",
+    questions: [
+      {
+        prompt: "Why should parallel tests not share one mutable WebDriver?",
+        short: "One driver field can be replaced by another thread. Clicks and quits then hit the wrong browser. Each test needs its own driver.",
+        detail: "ThreadLocal is one way to store that driver per thread. The ThreadLocal lesson shows the pattern.",
+      },
+      {
+        prompt: "How would you execute tests across Chrome, Firefox, and Edge?",
+        short: "I pass the browser name into the test and create only that driver. TestNG can run the three browser tests at the same time.",
+        detail: "The saved note uses parallel=\"tests\" and thread-count=\"3\". Each test quits its own driver.",
+      },
+      {
+        prompt: "When should parallel execution be limited?",
+        short: "I limit it when tests share data, the environment is small, or failures become impossible to read. More threads are not useful when the bottleneck is the application or the network.",
+        detail: "I raise the thread count only after a smaller run is stable.",
+      },
+      {
+        prompt: "How do you decide the thread count?",
+        short: "I start from the number of independent tests and the capacity of the agents. I stop increasing threads when the suite gets slower or flakier.",
+        detail: "thread-count=\"3\" in the saved note matches three browsers. It is not a universal number.",
+      },
+    ],
     sources: pdf("Pop-Up Selenium.pdf, pages 4-5", POP, "parallel"),
-    related: ["se-grid", "se-batch-groups", "se-webdriver"],
+    related: ["se-grid", "se-batch-groups", "se-webdriver", "se-thread-local"],
   },
   {
     id: "se-grid",
@@ -882,8 +920,20 @@ public void testInMultipleBrowsers(String browser) {
       "InvalidArgumentException: the method received a bad argument, such as a malformed URL or capability.",
     ],
     how: "The saved note keeps ElementNotVisibleException. I preserve that name. In Selenium 4 I also explain ElementNotInteractableException, because that is the exception current tests usually see.",
+    questions: [
+      {
+        prompt: "How do you handle StaleElementReferenceException?",
+        short: "The page replaced the element I was holding. I find it again after the update, and I wait until the new element is ready.",
+        detail: "I do not keep clicking the old reference. The AJAX lesson shows one retry. A retry loop is not a fix for a bad locator.",
+      },
+      {
+        prompt: "How do you investigate TimeoutException?",
+        short: "I check which condition timed out, then I look at the screenshot and the locator. The element may be absent, hidden, or slower than the timeout.",
+        detail: "I do not raise every timeout to several minutes. I fix the condition or the application delay.",
+      },
+    ],
     sources: pdf("SELENIUM.pdf, page 7", SEL, "nosuchelementexception"),
-    related: ["se-waits", "se-find-element", "se-ajax"],
+    related: ["se-waits", "se-find-element", "se-ajax", "se-ci-failure"],
   },
   {
     id: "se-dynamic",
@@ -901,8 +951,15 @@ public void testInMultipleBrowsers(String browser) {
       "Find the element again after an AJAX refresh.",
       "The saved note names this maintenance cost as a Selenium disadvantage too.",
     ],
+    questions: [
+      {
+        prompt: "How do you debug failures caused by dynamic elements?",
+        short: "I compare the locator with the element that was actually on the page. I check whether the id changed, the element arrived late, or a stale reference was reused.",
+        detail: "The screenshot and the page source at the failure show which of those three happened.",
+      },
+    ],
     sources: pdf("SELENIUM.pdf, page 8", SEL, "dynamic"),
-    related: ["se-xpath", "se-waits", "se-page-factory"],
+    related: ["se-xpath", "se-waits", "se-page-factory", "se-ci-failure"],
   },
   {
     id: "se-page-factory",
@@ -933,8 +990,20 @@ public void testInMultipleBrowsers(String browser) {
       "The saved note says Page Factory improves readability and maintenance.",
     ],
     how: "Page Factory lookup is lazy in current Selenium. The element is searched when the field is used. If the DOM changes, the same stale-element rule still applies.",
+    questions: [
+      {
+        prompt: "Why do we use the Page Object Model?",
+        short: "A page class holds the locators and the actions for one page. The test then reads like a user flow. A locator change stays in that class.",
+        detail: "The test should not repeat By.id calls. It should call a method such as loginPage.signIn().",
+      },
+      {
+        prompt: "What is the difference between Page Object Model and Page Factory?",
+        short: "Page Object Model is the design. Page Factory is one Selenium helper that fills @FindBy fields. A page class can call findElement directly and still be a page object.",
+        detail: "Page Factory does not add waits, reporting, or a driver. The framework lesson describes where those pieces belong.",
+      },
+    ],
     sources: pdf("SELENIUM.pdf, page 8", SEL, "page factory"),
-    related: ["se-dynamic", "se-locators"],
+    related: ["se-dynamic", "se-locators", "se-framework"],
   },
   {
     id: "se-programs",
@@ -948,6 +1017,7 @@ public void testInMultipleBrowsers(String browser) {
     sources: PROGRAMS.map((path) => javaFile(path)),
     related: ["se-alerts", "se-popup-kinds"],
   },
+  ...ADVANCED,
 ];
 
 function plain(value: string): string {

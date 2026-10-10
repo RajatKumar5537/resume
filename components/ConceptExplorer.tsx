@@ -14,6 +14,10 @@ import {
 import { findRanges } from "@/lib/note-find";
 import { openedNote, rememberOpenedNote } from "@/lib/opened-notes";
 import { STUDY_SUBJECTS, subjectById } from "@/lib/subjects";
+import { MANUAL_GROUPS, manualById, manualInGroup, searchManualLessons } from "@/lib/manual-lessons";
+import { MONGO_GROUPS, mongoById, mongoInGroup, searchMongoLessons } from "@/lib/mongo-lessons";
+import { REST_GROUPS, restById, restInGroup, searchRestLessons } from "@/lib/rest-assured-lessons";
+import { PLAYWRIGHT_GROUPS, playwrightById, playwrightInGroup, searchPlaywrightLessons } from "@/lib/playwright-lessons";
 import { SELENIUM_GROUPS, searchSeleniumLessons, seleniumById, seleniumInGroup } from "@/lib/selenium-lessons";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -303,7 +307,7 @@ function LearnLesson({
           <h3 className="note-h">Related concepts</h3>
           <div className="examples">
             {lesson.related.map((id) => {
-              const related = conceptById(id);
+              const related = conceptById(id) || seleniumById(id) || playwrightById(id) || manualById(id) || mongoById(id) || restById(id);
               if (!related) return null;
               return (
                 <button
@@ -341,7 +345,8 @@ export function ConceptExplorer() {
   const params = useSearchParams();
   const subjectId = params.get("subject") || "";
   const requested = params.get("topic") || "";
-  const [topicId, setTopicId] = useState(requested && (conceptById(requested) || seleniumById(requested)) ? requested : "");
+  const knownTopic = (id: string) => Boolean(conceptById(id) || seleniumById(id) || playwrightById(id) || manualById(id) || mongoById(id) || restById(id));
+  const [topicId, setTopicId] = useState(requested && knownTopic(requested) ? requested : "");
   const [mode, setMode] = useState<"learn" | "source">(DEFAULT_CONCEPT_MODE);
   const [showList, setShowList] = useState(!topicId);
   const [query, setQuery] = useState("");
@@ -357,10 +362,43 @@ export function ConceptExplorer() {
   const [findAt, setFindAt] = useState(0);
   const viewRef = useRef<HTMLElement>(null);
   const seleniumLibrary = subjectId === "selenium" || (!subjectId && Boolean(seleniumById(requested) || seleniumById(topicId)));
-  const lesson = seleniumLibrary ? seleniumById(topicId) : conceptById(topicId);
+  const playwrightLibrary = subjectId === "playwright" || (!subjectId && !seleniumLibrary && Boolean(playwrightById(requested) || playwrightById(topicId)));
+  const manualLibrary =
+    subjectId === "manual-testing" ||
+    (!subjectId && !seleniumLibrary && !playwrightLibrary && Boolean(manualById(requested) || manualById(topicId)));
+  const mongoLibrary =
+    subjectId === "mongodb" ||
+    (!subjectId && !seleniumLibrary && !playwrightLibrary && !manualLibrary && Boolean(mongoById(requested) || mongoById(topicId)));
+  const restLibrary =
+    subjectId === "rest-assured" ||
+    (!subjectId && !seleniumLibrary && !playwrightLibrary && !manualLibrary && !mongoLibrary && Boolean(restById(requested) || restById(topicId)));
+  const lesson = restLibrary
+    ? restById(topicId)
+    : mongoLibrary
+    ? mongoById(topicId)
+    : manualLibrary
+      ? manualById(topicId)
+      : playwrightLibrary
+        ? playwrightById(topicId)
+        : seleniumLibrary
+          ? seleniumById(topicId)
+          : conceptById(topicId);
   const lessonHits = useMemo(
-    () => (query.trim().length >= 2 ? (seleniumLibrary ? searchSeleniumLessons(query) : searchLessons(query)) : []),
-    [query, seleniumLibrary],
+    () =>
+      query.trim().length >= 2
+        ? restLibrary
+          ? searchRestLessons(query)
+          : mongoLibrary
+          ? searchMongoLessons(query)
+          : manualLibrary
+            ? searchManualLessons(query)
+            : playwrightLibrary
+              ? searchPlaywrightLessons(query)
+              : seleniumLibrary
+                ? searchSeleniumLessons(query)
+                : searchLessons(query)
+        : [],
+    [query, seleniumLibrary, playwrightLibrary, manualLibrary, mongoLibrary, restLibrary],
   );
   const inLesson = lesson ? lessonMatchCount(lesson, lessonFind) : 0;
   const findIndex = inLesson ? findAt % inLesson : 0;
@@ -392,7 +430,7 @@ export function ConceptExplorer() {
   }, [findIndex, lessonFind, topicId, mode]);
 
   useEffect(() => {
-    if (requested && (conceptById(requested) || seleniumById(requested))) {
+    if (requested && (conceptById(requested) || seleniumById(requested) || playwrightById(requested) || manualById(requested) || mongoById(requested) || restById(requested))) {
       setTopicId(requested);
       setMode(DEFAULT_CONCEPT_MODE);
       setShowList(false);
@@ -479,7 +517,7 @@ export function ConceptExplorer() {
     setSourceIndex(0);
     setLessonFind("");
     setShowList(false);
-    const subject = seleniumById(id) ? "selenium" : "java";
+    const subject = restById(id) ? "rest-assured" : mongoById(id) ? "mongodb" : manualById(id) ? "manual-testing" : playwrightById(id) ? "playwright" : seleniumById(id) ? "selenium" : "java";
     router.push(`/concepts?subject=${subject}&topic=${encodeURIComponent(id)}`, { scroll: false });
   }
 
@@ -544,22 +582,45 @@ export function ConceptExplorer() {
 
   const topicIsJava = Boolean(requested && conceptById(requested));
   const topicIsSelenium = Boolean(requested && seleniumById(requested));
+  const topicIsPlaywright = Boolean(requested && playwrightById(requested));
+  const topicIsManual = Boolean(requested && manualById(requested));
+  const topicIsMongo = Boolean(requested && mongoById(requested));
+  const topicIsRest = Boolean(requested && restById(requested));
   const showingJava = subjectId === "java" || (!subjectId && topicIsJava);
   const showingSelenium = subjectId === "selenium" || (!subjectId && topicIsSelenium && !showingJava);
-  const showingLibrary = showingJava || showingSelenium;
+  const showingPlaywright = subjectId === "playwright" || (!subjectId && topicIsPlaywright && !showingJava && !showingSelenium);
+  const showingManual = subjectId === "manual-testing" || (!subjectId && topicIsManual && !showingJava && !showingSelenium && !showingPlaywright);
+  const showingMongo = subjectId === "mongodb" || (!subjectId && topicIsMongo && !showingJava && !showingSelenium && !showingPlaywright && !showingManual);
+  const showingRest = subjectId === "rest-assured" || (!subjectId && topicIsRest && !showingJava && !showingSelenium && !showingPlaywright && !showingManual && !showingMongo);
+  const showingLibrary = showingJava || showingSelenium || showingPlaywright || showingManual || showingMongo || showingRest;
   const laterSubject = !showingLibrary && subjectId
     ? subjectById(subjectId) || { id: subjectId, title: "Subject", status: "later" as const, note: "This subject is not in the library yet." }
     : undefined;
-  const topicGroups = showingSelenium ? SELENIUM_GROUPS : CONCEPT_GROUPS;
-  const topicsInGroup = showingSelenium ? seleniumInGroup : conceptsInGroup;
-  const repoVisible = Boolean(repoHit?.path) && (!showingSelenium || /selenium|pop-up|popup/i.test(repoHit?.path || ""));
+  const topicGroups = showingRest ? REST_GROUPS : showingMongo ? MONGO_GROUPS : showingManual ? MANUAL_GROUPS : showingPlaywright ? PLAYWRIGHT_GROUPS : showingSelenium ? SELENIUM_GROUPS : CONCEPT_GROUPS;
+  const topicsInGroup = showingRest ? restInGroup : showingMongo ? mongoInGroup : showingManual ? manualInGroup : showingPlaywright ? playwrightInGroup : showingSelenium ? seleniumInGroup : conceptsInGroup;
+  const repoVisible =
+    Boolean(repoHit?.path) &&
+    (showingRest
+      ? /rest.?assured/i.test(repoHit?.path || "")
+      : showingMongo
+      ? /mongo/i.test(repoHit?.path || "")
+      : showingManual
+        ? /manual/i.test(repoHit?.path || "")
+        : showingPlaywright
+          ? /playwright/i.test(repoHit?.path || "")
+          : !showingSelenium || /selenium|pop-up|popup/i.test(repoHit?.path || ""));
+  const orderedTopics = topicGroups.flatMap((group) => topicsInGroup(group.id).map((item) => item.id));
+  const topicIndex = orderedTopics.indexOf(topicId);
+  const previousTopic = topicIndex > 0 ? orderedTopics[topicIndex - 1] : "";
+  const nextTopic = topicIndex >= 0 && topicIndex < orderedTopics.length - 1 ? orderedTopics[topicIndex + 1] : "";
+  const libraryTitle = showingRest ? "REST Assured concepts" : showingMongo ? "MongoDB concepts" : showingManual ? "Manual testing concepts" : showingPlaywright ? "Playwright concepts" : showingSelenium ? "Selenium concepts" : "Java concepts";
 
   return (
     <div className={`concepts-page${showingLibrary && !showList ? " reading" : ""}`}>
       {!showingLibrary && !laterSubject ? (
         <div className="programs-intro">
           <h1>Interview preparation</h1>
-          <p className="lede">Choose a subject. Java and Selenium are ready. The other subjects stay in Programs until their lessons are converted.</p>
+          <p className="lede">Choose a subject. Java, Selenium, Playwright, Manual Testing, MongoDB, and REST Assured are ready. The other subjects stay in Programs until their lessons are converted.</p>
           <div className="subject-grid">
             {STUDY_SUBJECTS.map((subject) => (
               <button key={subject.id} className="subject-card" type="button" data-ready={subject.status === "ready"} onClick={() => openSubject(subject.id)}>
@@ -582,7 +643,7 @@ export function ConceptExplorer() {
         <>
       <div className="programs-intro">
         <button className="btn secondary" type="button" onClick={openSubjects}>Back to subjects</button>
-        <h1>{showingSelenium ? "Selenium concepts" : "Java concepts"}</h1>
+        <h1>{libraryTitle}</h1>
         <p className="lede">
           Learn mode is the default. Source mode opens the saved PDF or Java program. The original files stay in
           Programs.
@@ -590,7 +651,7 @@ export function ConceptExplorer() {
       </div>
       <div className="library">
         <button className="btn secondary subject-back" type="button" onClick={openSubjects}>Back to subjects</button>
-        <aside className="library-tree" aria-label={showingSelenium ? "Selenium topics" : "Java topics"}>
+        <aside className="library-tree" aria-label={showingRest ? "REST Assured topics" : showingMongo ? "MongoDB topics" : showingManual ? "Manual testing topics" : showingPlaywright ? "Playwright topics" : showingSelenium ? "Selenium topics" : "Java topics"}>
           <form
             className="concept-search"
             onSubmit={(event) => {
@@ -601,7 +662,7 @@ export function ConceptExplorer() {
             <input
               aria-label="Search concepts"
               value={query}
-              placeholder={showingSelenium ? "Search locators, waits, TestNG" : "Search OOP, ArrayList, second largest"}
+              placeholder={showingRest ? "Search given, JSONPath, auth" : showingMongo ? "Search find, filter, aggregation" : showingManual ? "Search smoke, severity, regression" : showingPlaywright ? "Search locators, expect, trace" : showingSelenium ? "Search locators, waits, TestNG" : "Search OOP, ArrayList, second largest"}
               onChange={(event) => setQuery(event.target.value)}
             />
           </form>
@@ -650,7 +711,7 @@ export function ConceptExplorer() {
             <button type="button" onClick={() => setShowList(true)}>
               Topics
             </button>
-            <strong>{lesson?.title || (showingSelenium ? "Selenium concepts" : "Java concepts")}</strong>
+            <strong>{lesson?.title || libraryTitle}</strong>
           </div>
           {!lesson ? <p className="hint">Choose a topic. Learn mode opens first.</p> : null}
           {lesson ? (
@@ -702,6 +763,14 @@ export function ConceptExplorer() {
                   ) : null}
                 </div>
               )}
+              <div className="lesson-actions">
+                <button className="btn secondary" type="button" disabled={!previousTopic} onClick={() => previousTopic && openLesson(previousTopic)}>
+                  Previous lesson
+                </button>
+                <button className="btn secondary" type="button" disabled={!nextTopic} onClick={() => nextTopic && openLesson(nextTopic)}>
+                  Next lesson
+                </button>
+              </div>
             </>
           ) : null}
         </section>

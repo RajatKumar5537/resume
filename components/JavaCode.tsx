@@ -58,6 +58,15 @@ const KEYWORD = new Set([
   "assert",
   "const",
   "goto",
+  "let",
+  "var",
+  "function",
+  "async",
+  "await",
+  "export",
+  "from",
+  "of",
+  "typeof",
 ]);
 
 type TokenKind = "comment" | "string" | "number" | "keyword" | "control" | "class" | "method" | "variable" | "operator";
@@ -126,7 +135,7 @@ function highlightJava(code: string): Token[] {
       index += text.length;
       continue;
     }
-    if (rest.startsWith("\"") || rest.startsWith("'")) {
+    if (rest.startsWith("\"") || rest.startsWith("'") || rest.startsWith("`")) {
       const quote = rest[0];
       let cursor = 1;
       while (cursor < rest.length) {
