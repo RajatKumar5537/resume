@@ -907,10 +907,28 @@ select {
 
 .concepts-page .programs-intro .btn { margin-bottom: 12px; }
 
+.concepts-page .library-tree {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .concepts-page .concept-search {
   display: flex;
+  flex: none;
   align-items: center;
   gap: 6px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--card);
+}
+
+.concepts-page .topic-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .concepts-page .subject-back {

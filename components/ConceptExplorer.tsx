@@ -412,7 +412,7 @@ export function ConceptExplorer() {
       window.scrollTo(0, Math.max(0, y));
     }
     const active = document.querySelector('.concepts-page .library-tree .file-button[data-active="true"]');
-    const tree = active?.closest(".library-tree");
+    const tree = active?.closest(".topic-scroll");
     if (active instanceof HTMLElement && tree instanceof HTMLElement && tree.scrollHeight > tree.clientHeight + 8) {
       const next = active.getBoundingClientRect().top - tree.getBoundingClientRect().top + tree.scrollTop;
       tree.scrollTop = Math.max(0, next);
@@ -627,6 +627,7 @@ export function ConceptExplorer() {
               onChange={(event) => setQuery(event.target.value)}
             />
           </form>
+          <div className="topic-scroll">
           {searchError ? <p className="error">{searchError}</p> : null}
           {lessonHits.length ? (
             <div className="file-list">
@@ -665,6 +666,7 @@ export function ConceptExplorer() {
               </div>
             </section>
           ))}
+          </div>
         </aside>
         <section className="library-view" ref={viewRef}>
           <div className="read-bar">
