@@ -11,8 +11,17 @@ export const HR_LESSONS: ConceptLesson[] = [
     title: "Tell me about yourself",
     aliases: ["self introduction", "introduce yourself", "tell me about yourself", "hr introduction"],
     basis: "Prepared from Rajat Kumar Pradhan's own introduction.",
-    summary:
-      "Hi, I’m Rajat Kumar Pradhan. I’m originally from Odisha and currently based in Delhi. I have more than five years of experience in QA and test automation. I joined my current organization as a QA Team Lead, where I mentored a team of four members, and after one year I was promoted to QA Manager. Currently, I handle QA activities across eight projects. My responsibilities include test planning, preparing test cases and identifying edge cases, reviewing automation code, managing defects, and guiding my team. Technically, I use Playwright with JavaScript for UI automation, Axios and Postman for API testing, Appium for Android automation, Socket.IO for real-time communication testing, and JMeter for performance testing. I also coordinate with developers and stakeholders to understand requirements, prioritize testing activities, and help deliver stable, high-quality products. That’s a brief introduction about me.",
+    summary: `Hi, I'm Rajat Kumar Pradhan. I'm originally from Odisha and currently staying in Delhi.
+
+I have more than five years of experience in QA and Test Automation. I joined my current organization as a QA Team Lead, where I mentored a team of four members. After one year, I was promoted to QA Manager.
+
+Currently, I'm handling QA activities across eight projects. My responsibilities include test planning, preparing test cases and identifying edge cases, reviewing automation code, managing defects, and guiding my team.
+
+Technically, I work with Playwright and JavaScript for UI automation, Axios and Postman for API testing, Appium for Android automation, Socket.IO for real-time communication testing, and JMeter for performance testing.
+
+I also coordinate with developers and stakeholders to understand requirements, prioritize testing activities, and ensure we deliver stable, high-quality products.
+
+That's a brief introduction about me.`,
     simple:
       "Keep the answer in this order: location, experience, career growth, current scope, technical tools, teamwork, and quality outcome.",
     points: [

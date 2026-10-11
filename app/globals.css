@@ -1102,6 +1102,7 @@ select {
   max-width: 68ch;
   font-size: 1.08rem;
   line-height: 1.65;
+  white-space: pre-line;
 }
 
 .concepts-page .lesson-actions {
