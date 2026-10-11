@@ -527,7 +527,7 @@ export function ConceptExplorer() {
   const libraryTitle = showingRest ? "REST Assured concepts" : showingMongo ? "MongoDB concepts" : showingManual ? "Manual testing concepts" : showingPlaywright ? "Playwright concepts" : showingSelenium ? "Selenium concepts" : "Java concepts";
 
   return (
-    <div className={`concepts-page${showingLibrary && !showList ? " reading" : ""}`}>
+    <div className={`concepts-page${showingLibrary ? " has-library" : ""}${showingLibrary && !showList ? " reading" : ""}`}>
       {!showingLibrary && !laterSubject ? (
         <div className="programs-intro">
           <h1>Interview preparation</h1>

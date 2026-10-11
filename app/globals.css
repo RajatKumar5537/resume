@@ -77,7 +77,6 @@ body {
 html[data-standalone="true"],
 html[data-standalone="true"] body {
   height: 100%;
-  height: -webkit-fill-available;
   min-height: 0;
   overflow: hidden;
 }
@@ -1299,28 +1298,39 @@ select {
   .interview-page.reading .note-find { top: calc(env(safe-area-inset-top) + 58px); }
 }
 
-/* Phone landscape: both cards fill the space under the header and stay aligned. */
+/* Phone landscape: both cards fill the space under the header and stay aligned.
+   Size them with flex, not viewport height or :has(), so the right card paints with the list. */
 @media screen and (max-height: 500px) and (min-width: 700px) {
   html:not([data-standalone="true"]),
-  html:not([data-standalone="true"]) body { max-width: 100%; overflow-x: hidden; }
-  .programs-intro,
-  .interview-intro { display: none; }
-  html:not([data-standalone="true"]) body:has(.programs-page),
-  html:not([data-standalone="true"]) body:has(.concepts-page),
-  html:not([data-standalone="true"]) body:has(.interview-page) {
-    display: flex;
-    flex-direction: column;
-    height: 100dvh;
-    max-height: 100dvh;
+  html:not([data-standalone="true"]) body {
+    height: 100%;
+    max-width: 100%;
     overflow: hidden;
   }
-  html[data-standalone="true"] .desk-app[data-screen="programs"] > main,
-  html[data-standalone="true"] .desk-app[data-screen="concepts"] > main,
-  html[data-standalone="true"] .desk-app[data-screen="interview"] > main {
+  html:not([data-standalone="true"]) body {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  html:not([data-standalone="true"]) .desk-app {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    width: 100%;
+  }
+  .programs-intro,
+  .interview-intro { display: none; }
+  .desk-app[data-screen="programs"] > main,
+  .desk-app[data-screen="concepts"] > main,
+  .desk-app[data-screen="interview"] > main {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    flex: 1 1 auto;
+    width: 100%;
     max-width: none;
+    min-height: 0;
     margin: 0;
     padding: 8px max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   }
@@ -1360,19 +1370,6 @@ select {
     padding: 4px 7px;
     font-size: 12px;
   }
-  body:has(.programs-page) main,
-  body:has(.concepts-page) main,
-  body:has(.interview-page) main {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: none;
-    min-height: 0;
-    overflow: hidden;
-    margin: 0;
-    padding: 8px max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
-  }
   .programs-page,
   .concepts-page,
   .interview-page {
@@ -1392,8 +1389,8 @@ select {
     gap: 10px;
     align-items: stretch;
     min-height: 0;
-    height: 100%;
     width: 100%;
+    grid-template-rows: minmax(0, 1fr);
   }
   .interview-layout > :only-child { grid-column: 1 / -1; }
   .library-tree,
@@ -1402,7 +1399,6 @@ select {
   .interview-answer {
     min-width: 0;
     min-height: 0;
-    height: 100%;
     max-height: none;
     margin: 0;
     overflow-x: hidden;
@@ -1422,7 +1418,7 @@ select {
     min-height: 0;
     overflow: auto;
   }
-  .concepts-page:has(.library) .programs-intro { display: none; }
+  .concepts-page.has-library .programs-intro { display: none; }
   .concepts-page .programs-intro h1 { margin: 0 0 4px; font-size: 24px; }
   .concepts-page .programs-intro .lede { margin: 0 0 8px; font-size: 14px; line-height: 1.35; }
   .concepts-page .subject-grid {

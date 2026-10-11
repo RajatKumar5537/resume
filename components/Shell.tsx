@@ -76,7 +76,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
   }, [signedInEmail, path]);
   useEffect(() => {
     if (!signedInEmail) return;
-    for (const href of ["/", "/profile", "/concepts", "/programs", "/interview", "/applications"]) router.prefetch(href);
+    const timer = window.setTimeout(() => {
+      for (const href of ["/", "/profile", "/concepts", "/programs", "/interview", "/applications"]) router.prefetch(href);
+    }, 400);
+    return () => window.clearTimeout(timer);
   }, [signedInEmail, router]);
   if (path === "/login") {
     return (
