@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { deskScrollTop, scrollDeskTo } from "@/lib/desk-scroll";
 import type { ApplicationRound } from "@/lib/types";
 
 const STAGES = ["Technical Round", "Assignment", "HR Round", "Final Round", "Applied"];
@@ -199,17 +200,17 @@ export function ApplicationDesk() {
 
   useLayoutEffect(() => {
     if (keepScroll.current == null) return;
-    window.scrollTo(0, keepScroll.current);
+    scrollDeskTo(keepScroll.current);
   }, [draft]);
 
   useEffect(() => {
     if (keepScroll.current == null) return;
-    window.scrollTo(0, keepScroll.current);
+    scrollDeskTo(keepScroll.current);
     keepScroll.current = null;
   }, [draft]);
 
   function openEditor(round: ApplicationRound) {
-    keepScroll.current = window.scrollY;
+    keepScroll.current = deskScrollTop();
     setDraft(round);
   }
 

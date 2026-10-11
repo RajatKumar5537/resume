@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { JavaCode } from "@/components/JavaCode";
 import { NoteReader } from "@/components/NoteReader";
 import { searchLessons } from "@/lib/concepts";
+import { scrollDeskBy, scrollDeskTo } from "@/lib/desk-scroll";
 import { cachedAnswer, rememberAnswer, rememberOpenedNote, syncNoteCacheRevision } from "@/lib/opened-notes";
 
 type ProgramChoice = { path: string; title: string; origin: "mongodb" | "github" };
@@ -85,7 +86,7 @@ export function InterviewDesk() {
       if (cached && cached.source !== "choices") {
         setResult(cached);
         setReading(true);
-        window.scrollTo(0, 0);
+        scrollDeskTo(0);
         if (answerRef.current) answerRef.current.scrollTop = 0;
         return;
       }
@@ -101,7 +102,7 @@ export function InterviewDesk() {
       if (data.path?.toLowerCase().endsWith(".pdf") && data.answer) rememberOpenedNote(data.path, "pdf", data.answer);
       setResult(data);
       setReading(true);
-      window.scrollTo(0, 0);
+      scrollDeskTo(0);
       if (answerRef.current) answerRef.current.scrollTop = 0;
     } catch (caught) {
       if (!generate) {
@@ -116,14 +117,14 @@ export function InterviewDesk() {
 
   useEffect(() => {
     if (!reading) return;
-    window.scrollTo(0, 0);
+    scrollDeskTo(0);
     const pane = answerRef.current;
     if (!pane) return;
     const target = pane.querySelector("[data-note-focus]");
     if (!target) {
       pane.scrollTop = 0;
       pane.scrollLeft = 0;
-      window.scrollTo(0, 0);
+      scrollDeskTo(0);
     } else {
       const coverBottom = Math.max(
         pane.querySelector(".note-find")?.getBoundingClientRect().bottom || 0,
@@ -133,7 +134,7 @@ export function InterviewDesk() {
       const anchor = paneScrolls ? pane.getBoundingClientRect().top : 0;
       const delta = target.getBoundingClientRect().top - Math.max(anchor, coverBottom) - 12;
       if (paneScrolls) pane.scrollTop += delta;
-      else window.scrollBy(0, delta);
+      else scrollDeskBy(delta);
     }
     pane.querySelectorAll(".answer-code").forEach((node) => {
       node.scrollLeft = 0;

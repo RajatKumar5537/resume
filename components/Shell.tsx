@@ -4,7 +4,7 @@ import { prefetchLibraryList } from "@/lib/library-prefetch";
 import { syncNoteCacheUser } from "@/lib/opened-notes";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 function currentTheme(): "light" | "dark" {
@@ -58,28 +58,40 @@ function ThemeToggle() {
   );
 }
 
+function screenName(path: string): string {
+  if (path.startsWith("/concepts")) return "concepts";
+  if (path.startsWith("/programs")) return "programs";
+  if (path.startsWith("/interview")) return "interview";
+  return "";
+}
+
 export function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
   const signedInEmail = session?.user?.email?.trim().toLowerCase() || "";
   useEffect(() => {
     syncNoteCacheUser(signedInEmail);
     if (signedInEmail && path !== "/login" && !path.startsWith("/programs")) prefetchLibraryList();
   }, [signedInEmail, path]);
+  useEffect(() => {
+    if (!signedInEmail) return;
+    for (const href of ["/", "/profile", "/concepts", "/programs", "/interview", "/applications"]) router.prefetch(href);
+  }, [signedInEmail, router]);
   if (path === "/login") {
     return (
-      <>
+      <div className="desk-app">
         <div className="auth-theme">
           <ThemeToggle />
         </div>
         <main className="auth-main">{children}</main>
-      </>
+      </div>
     );
   }
   const name = session?.user?.name?.trim() || "";
   const email = session?.user?.email?.trim() || "";
   return (
-    <>
+    <div className="desk-app" data-screen={screenName(path)}>
       <header className="topbar no-print">
         <DeskLink href="/" className="brand">
           Desk <span>Resumes</span>
@@ -125,6 +137,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </nav>
       </header>
       <main>{children}</main>
-    </>
+    </div>
   );
 }

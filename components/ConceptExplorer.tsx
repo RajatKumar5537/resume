@@ -5,6 +5,7 @@ import { NoteReader } from "@/components/NoteReader";
 import type { ConceptLesson, ConceptSource } from "@/lib/concepts";
 import { findRanges } from "@/lib/note-find";
 import { openedNote, rememberOpenedNote } from "@/lib/opened-notes";
+import { deskScroller } from "@/lib/desk-scroll";
 import { cachedLesson, cachedSubject, loadSubjectPack, prefetchReadySubjects, readySubject, type SubjectPack } from "@/lib/subject-pack";
 import { STUDY_SUBJECTS, subjectById } from "@/lib/subjects";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -365,14 +366,20 @@ export function ConceptExplorer() {
     if (lessonBody instanceof HTMLElement) lessonBody.scrollTop = 0;
     const paneScrolls = pane.scrollHeight > pane.clientHeight + 8;
     if (!paneScrolls) {
-      const topbar = document.querySelector(".topbar");
-      const topbarCovers =
-        topbar instanceof HTMLElement &&
-        getComputedStyle(topbar).display !== "none" &&
-        getComputedStyle(topbar).position === "sticky";
-      const offset = topbarCovers ? topbar.getBoundingClientRect().height : 0;
-      const y = pane.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo(0, Math.max(0, y));
+      const scroller = deskScroller();
+      if (scroller) {
+        const next = pane.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+        scroller.scrollTop = Math.max(0, next);
+      } else {
+        const topbar = document.querySelector(".topbar");
+        const topbarCovers =
+          topbar instanceof HTMLElement &&
+          getComputedStyle(topbar).display !== "none" &&
+          getComputedStyle(topbar).position === "sticky";
+        const offset = topbarCovers ? topbar.getBoundingClientRect().height : 0;
+        const y = pane.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo(0, Math.max(0, y));
+      }
     }
     const active = document.querySelector('.concepts-page .library-tree .file-button[data-active="true"]');
     const tree = active?.closest(".topic-scroll");

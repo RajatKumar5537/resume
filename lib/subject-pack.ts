@@ -81,6 +81,18 @@ export function cachedSubject(id: string): string {
   return "";
 }
 
+function onIdle(callback: () => void, delay: number) {
+  if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(() => callback());
+  else window.setTimeout(callback, delay);
+}
+
 export function prefetchReadySubjects(): void {
-  for (const subject of READY_SUBJECTS) void loadSubjectPack(subject);
+  let index = 0;
+  const step = () => {
+    const subject = READY_SUBJECTS[index];
+    if (!subject) return;
+    index += 1;
+    void loadSubjectPack(subject).then(() => onIdle(step, 240));
+  };
+  onIdle(step, 400);
 }

@@ -70,6 +70,49 @@ body {
   line-height: 1.5;
 }
 
+/* Add to Home Screen reloads the page when rotation changes the document scroll height.
+   Keep the document fixed in both orientations and scroll inside the app. */
+.desk-app { display: contents; }
+
+html[data-standalone="true"],
+html[data-standalone="true"] body {
+  height: 100%;
+  height: -webkit-fill-available;
+  min-height: 0;
+  overflow: hidden;
+}
+
+html[data-standalone="true"] body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-height: none;
+  display: flex;
+  flex-direction: column;
+}
+
+html[data-standalone="true"] .desk-app {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+html[data-standalone="true"] .topbar {
+  position: relative;
+  flex: none;
+  backdrop-filter: none;
+}
+
+html[data-standalone="true"] .desk-app > main {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 button, input, textarea { font: inherit; color: inherit; }
 
 button { cursor: pointer; }
@@ -1258,21 +1301,33 @@ select {
 
 /* Phone landscape: both cards fill the space under the header and stay aligned. */
 @media screen and (max-height: 500px) and (min-width: 700px) {
-  html, body { max-width: 100%; overflow-x: hidden; }
+  html:not([data-standalone="true"]),
+  html:not([data-standalone="true"]) body { max-width: 100%; overflow-x: hidden; }
   .programs-intro,
   .interview-intro { display: none; }
-  body:has(.programs-page),
-  body:has(.concepts-page),
-  body:has(.interview-page) {
+  html:not([data-standalone="true"]) body:has(.programs-page),
+  html:not([data-standalone="true"]) body:has(.concepts-page),
+  html:not([data-standalone="true"]) body:has(.interview-page) {
     display: flex;
     flex-direction: column;
     height: 100dvh;
     max-height: 100dvh;
     overflow: hidden;
   }
+  html[data-standalone="true"] .desk-app[data-screen="programs"] > main,
+  html[data-standalone="true"] .desk-app[data-screen="concepts"] > main,
+  html[data-standalone="true"] .desk-app[data-screen="interview"] > main {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-width: none;
+    margin: 0;
+    padding: 8px max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  }
   .topbar {
     position: relative;
     flex: none;
+    backdrop-filter: none;
     flex-wrap: nowrap;
     align-items: center;
     gap: 8px;
@@ -1505,6 +1560,8 @@ html.printing body {
   color-scheme: light only !important;
   background: white !important;
   color: #1a1814 !important;
+  position: static !important;
+  height: auto !important;
   overflow: visible !important;
 }
 
@@ -1542,6 +1599,8 @@ html.printing .paper {
     color-scheme: light only !important;
     background: white !important;
     color: #1a1814 !important;
+    position: static !important;
+    height: auto !important;
     overflow: visible !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;

@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { NoteReader } from "@/components/NoteReader";
+import { scrollDeskTo } from "@/lib/desk-scroll";
 import { loadLibraryList, type LibraryListResponse } from "@/lib/library-prefetch";
 import { clearOpenedNotes, openedNote, rememberOpenedNote, syncNoteCacheRevision } from "@/lib/opened-notes";
 
@@ -79,7 +80,7 @@ export function ProgramDesk() {
   const viewRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    scrollDeskTo(0);
     if (viewRef.current) viewRef.current.scrollTop = 0;
   }, [selected?.path, text]);
 
@@ -164,7 +165,7 @@ export function ProgramDesk() {
     setSelected(file);
     setError("");
     setShowFiles(false);
-    window.scrollTo(0, 0);
+    scrollDeskTo(0);
     if (viewRef.current) viewRef.current.scrollTop = 0;
     const saved = openedNote(file.path);
     if (saved?.text) {
