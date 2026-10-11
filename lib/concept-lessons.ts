@@ -3,6 +3,7 @@ import { BATCH2 } from "./concept-lessons-batch2";
 import { GAPS } from "./concept-lessons-gaps";
 
 const BASIS = "Interview-ready answer.";
+const PROGRAM_ONLY_LESSONS = new Set(["array-programs", "number-programs", "string-programs", "pattern-programs"]);
 
 const OOPS = "Interview_PDF/OOPS concept_Java.pdf";
 const ARRAYS = "Interview_PDF/Array_Collection_Java.pdf";
@@ -27,7 +28,7 @@ function sides(
   };
 }
 
-export const CONCEPTS: ConceptLesson[] = [
+const ALL_CONCEPTS: ConceptLesson[] = [
   {
     id: "oop-overview",
     group: "oop",
@@ -825,7 +826,7 @@ class Main {
       { label: "BinarySearch.java", path: "src/main/java/Sorting/BinarySearch.java", kind: "java" },
       { label: "Sorting.java", path: "src/main/java/Sorting/Sorting.java", kind: "java" },
     ],
-    related: ["array-basics", "nth-largest", "array-programs"],
+    related: ["array-basics", "nth-largest"],
   },
   {
     id: "array-vs-arraylist",
@@ -1252,3 +1253,5 @@ class Main {
   ...BATCH2,
   ...GAPS,
 ];
+
+export const CONCEPTS = ALL_CONCEPTS.filter((lesson) => !PROGRAM_ONLY_LESSONS.has(lesson.id));

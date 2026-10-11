@@ -1,6 +1,6 @@
 import { requireUser } from "@/lib/auth";
-import { foldersFromNotes } from "@/lib/library";
-import { listInterviewFiles, notesRevision } from "@/lib/interview-library";
+import { libraryTree } from "@/lib/library";
+import { notesRevision } from "@/lib/interview-library";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -14,10 +14,9 @@ export async function GET(request: Request) {
     if (known && revision && known === revision) {
       return NextResponse.json({ revision, unchanged: true });
     }
-    const files = await listInterviewFiles();
     return NextResponse.json({
       revision,
-      folders: foldersFromNotes(files),
+      folders: await libraryTree(),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not open the programs.";

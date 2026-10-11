@@ -1,4 +1,5 @@
 import { listInterviewFiles, listSavedPrograms, loadPdfNotes, readInterviewNote, type SavedProgram, type StoredNote } from "@/lib/interview-library";
+import { BUILT_IN_PROGRAMS, builtInProgram, isBuiltInProgram } from "@/lib/built-in-programs";
 
 const REPO = "RajatKumar5537/Java-Selenium-Program";
 const BRANCH = "master";
@@ -142,8 +143,9 @@ function questionTokens(question: string): { specific: string[]; weak: string[] 
 
 async function catalog(): Promise<RepoEntry[]> {
   const files = await listInterviewFiles();
-  if (!files.length) throw new Error("Interview notes are not in the database yet.");
-  return files.map((file) => ({
+  const entries = [...files, ...BUILT_IN_PROGRAMS];
+  if (!entries.length) throw new Error("Interview notes are not in the database yet.");
+  return entries.map((file) => ({
     path: file.path,
     name: file.title,
     words: wordsFromPath(file.path),
@@ -510,21 +512,24 @@ export async function answerInterview(
     };
   }
   if (match.origin === "github" && match.confidentPath) {
-    const note = await readInterviewNote(match.confidentPath);
+    const note = builtInProgram(match.confidentPath) || (await readInterviewNote(match.confidentPath));
     const hit = entries.find((entry) => entry.path === match.confidentPath);
     if (note?.text && hit) {
       const pdf = hit.kind === "pdf";
+      const builtIn = isBuiltInProgram(hit.path);
       return {
         source: "repo",
         origin: "github",
         title: titleFrom(hit),
         path: hit.path,
-        url: fileUrl(hit.path),
+        url: builtIn ? undefined : fileUrl(hit.path),
         code: pdf ? undefined : note.text,
         answer: pdf ? note.text : rankQuestion(asked, entries).solved || undefined,
         focus: pdf ? rankQuestion(asked, pdfNotes.map((item) => ({ path: item.path, name: item.title, kind: item.kind, text: item.text }))).focus : undefined,
         language: "java",
-        note: pdf
+        note: builtIn
+          ? "Built-in interview program. Gemini was not called."
+          : pdf
           ? "Found in GitHub. Opened the synced note and moved to this word. Gemini was not called."
           : "Found in GitHub. This program is already in the synced repo, so Gemini was not called.",
         related: match.close,

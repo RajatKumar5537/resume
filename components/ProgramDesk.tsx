@@ -20,7 +20,7 @@ type LibraryFolder = {
   files: LibraryFile[];
 };
 
-const LIBRARY_KEY = "desk-library-list";
+const LIBRARY_KEY = "desk-library-list-v3";
 
 type SavedLibrary = { revision: string; folders: LibraryFolder[] };
 type LibraryResponse = LibraryListResponse;
@@ -29,6 +29,8 @@ function readSavedLibrary(): SavedLibrary | null {
   if (typeof window === "undefined") return null;
   try {
     localStorage.removeItem("desk-library");
+    localStorage.removeItem("desk-library-list");
+    localStorage.removeItem("desk-library-list-v2");
   } catch {
     // The old copy stored every file. Dropping it keeps the next open fast.
   }
@@ -68,7 +70,7 @@ export function ProgramDesk() {
   const router = useRouter();
   const [programQuery, setProgramQuery] = useState("");
   const [folders, setFolders] = useState<LibraryFolder[]>([]);
-  const [openId, setOpenId] = useState("java");
+  const [openId, setOpenId] = useState("array");
   const [selected, setSelected] = useState<LibraryFile | null>(null);
   const [text, setText] = useState("");
   const [error, setError] = useState("");
