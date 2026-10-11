@@ -54,7 +54,8 @@ export type ConceptGroupId =
   | "fw-nexus-api"
   | "fw-chatkit"
   | "fw-meteor"
-  | "fw-hybrid";
+  | "fw-hybrid"
+  | "hr-introduction";
 
 export type ConceptSource = {
   label: string;

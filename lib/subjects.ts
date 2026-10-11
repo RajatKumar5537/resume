@@ -19,7 +19,7 @@ export const STUDY_SUBJECTS: StudySubject[] = [
   { id: "bdd", title: "BDD", status: "later", note: "Not converted yet." },
   { id: "framework-design", title: "Framework Design", status: "ready", note: "Project-wise framework architecture, execution, reporting, limitations, and interview answers." },
   { id: "test-cases", title: "Test Cases", status: "later", note: "Not converted yet." },
-  { id: "hr", title: "HR Round", status: "later", note: "Not converted yet." },
+  { id: "hr", title: "HR Round", status: "ready", note: "Self introduction and practical HR interview answers." },
   { id: "cultural", title: "Cultural Round", status: "later", note: "Not converted yet." },
 ];
 
