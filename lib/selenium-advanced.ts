@@ -1,7 +1,6 @@
 import type { ConceptLesson } from "./concepts";
 
-const BASIS =
-  "Prepared senior-level interview explanation. It is not a quotation from a saved PDF. Customize any project names before you use this answer.";
+const BASIS = "Interview-ready answer.";
 
 export const ADVANCED: ConceptLesson[] = [
   {
@@ -84,7 +83,7 @@ export const ADVANCED: ConceptLesson[] = [
         detail: "A reviewer should be able to run one test and see where the locator, the data, and the assertion live.",
       },
     ],
-    how: "The saved Selenium notes show Page Factory, TestNG, screenshots, Excel, properties, and parallel browsers. They do not describe a complete framework. Before an interview I swap ChromeDriver, the config file name, and the report tool for the ones in my project. I do not claim a tool I have not used.",
+    how: "My framework explanation covers Page Factory, TestNG, screenshots, Excel, properties, and parallel browsers as connected components. Before an interview I swap ChromeDriver, the config file name, and the report tool for the ones in my project. I do not claim a tool I have not used.",
     sources: [],
     related: ["se-page-factory", "se-screenshot", "se-parallel", "se-test-data"],
   },
@@ -151,7 +150,7 @@ export const ADVANCED: ConceptLesson[] = [
         detail: "A quarantined test still has an owner and a fix date. Hiding it forever removes coverage without saying so.",
       },
     ],
-    how: "Headless mode can fail when a click needs a real viewport or when a rendering difference changes the layout. I compare a headed local run with the CI browser version before I change the test. The saved notes do not include a Jenkinsfile. I describe the investigation this way and then name the CI tool I actually use.",
+    how: "Headless mode can fail when a click needs a real viewport or when a rendering difference changes the layout. I compare a headed local run with the CI browser version before I change the test. I describe the investigation this way and then name the CI tool I actually use.",
     sources: [],
     related: ["se-exceptions", "se-waits", "se-dynamic", "se-screenshot", "se-cicd"],
   },
@@ -239,7 +238,7 @@ export const ADVANCED: ConceptLesson[] = [
         detail: "I do not pick 20 threads because the machine has idle CPU. The browser and the application also have limits.",
       },
     ],
-    how: "This class is a sample. I connect it to the browser choice in my project. I do not say a team uses ThreadLocal unless that team actually does. The saved popup note uses a driver field in the original snippet. That field is the problem this pattern avoids.",
+    how: "This class is a sample. I connect it to the browser choice in my project. I do not say a team uses ThreadLocal unless that team actually does. I use a driver field in the original snippet. That field is the problem this pattern avoids.",
     sources: [],
     related: ["se-parallel", "se-test-data", "se-cicd"],
   },
@@ -314,7 +313,7 @@ WebDriver driver = new ChromeDriver(options);`,
         detail: "I measure the slowest tests before I add threads. Parallel execution does not fix a test that waits for no reason.",
       },
     ],
-    how: "The saved notes mention Jenkins and Maven as integration points. They do not include a Jenkinsfile or an Azure YAML file. I describe the command and the published evidence. I name Jenkins or Azure only for the pipeline I have actually configured. --headless=new is the current Chrome argument. Older notes sometimes say --headless alone.",
+    how: "I integrate the Selenium suite through Maven with a CI pipeline such as Jenkins, and publish the resulting evidence. I describe the command and the published evidence. I name Jenkins or Azure only for the pipeline I have actually configured. --headless=new is the current Chrome argument. Older Chrome versions also accepted --headless alone.",
     sources: [],
     related: ["se-ci-failure", "se-parallel", "se-suite-speed", "se-batch-groups"],
   },
@@ -384,7 +383,7 @@ WebDriver driver = new ChromeDriver(options);`,
         detail: "Coverage of every screen is weaker than reliable coverage of the paths that block a release.",
       },
     ],
-    how: "I do not promise a minutes-saved number in an interview unless I have measured that suite. The method is evidence first, then the smallest change. The saved notes do not include timing results.",
+    how: "I do not promise a minutes-saved number in an interview unless I have measured that suite. The method is evidence first, then the smallest change.",
     sources: [],
     related: ["se-waits", "se-locators", "se-cicd", "se-test-data"],
   },

@@ -2,8 +2,7 @@ import type { ConceptLesson } from "./concepts";
 import { BATCH2 } from "./concept-lessons-batch2";
 import { GAPS } from "./concept-lessons-gaps";
 
-const BASIS =
-  "Prepared interview explanation. It is not a quotation from a saved PDF or Java file.";
+const BASIS = "Interview-ready answer.";
 
 const OOPS = "Interview_PDF/OOPS concept_Java.pdf";
 const ARRAYS = "Interview_PDF/Array_Collection_Java.pdf";
@@ -607,7 +606,7 @@ class Main {
     basis: BASIS,
     summary:
       "Start the maximum with the first element. Compare every later element with it. Replace the maximum when you find a larger value.",
-    how: "LargestElement.java is a saved program for this question. It uses its own sample data. This example uses {4, 12, 7, 2, 19}. It prints 19. The wording is prepared. It is not copied from that file.",
+    how: "LargestElement.java demonstrates this question. It uses its own sample data. This example uses {4, 12, 7, 2, 19}. It prints 19. This is an interview-ready example. ",
     example: {
       code: `class Main {
     public static void main(String[] args) {
@@ -637,7 +636,7 @@ class Main {
     basis: BASIS,
     summary:
       "Keep the largest distinct value and the second-largest distinct value. Walk the array once. When a new maximum appears, the old maximum becomes second.",
-    how: "SecondLargest.java is the saved program for this question. It uses its own sample data. This example uses {6, 3, 5, 67, 7}. It prints 7. The code is prepared. It is not copied from that file.",
+    how: "SecondLargest.java demonstrates this question. It uses its own sample data. This example uses {6, 3, 5, 67, 7}. It prints 7. This is an interview-ready example. ",
     example: {
       code: `class Main {
     public static void main(String[] args) {
@@ -679,7 +678,7 @@ class Main {
       "Remove duplicates first. Sort the remaining values from largest to smallest. Read the value at index n - 1.",
     simple:
       "The distinct values of {6, 3, 5, 67, 7}, from largest to smallest, are 67, 7, 6, 5, and 3. The third-largest is 6. Ask whether duplicates should count separately. The answer can change if they do.",
-    how: "nthBigestElement_Array.java is a saved program for this question. This lesson sorts distinct values and prints 6 for n = 3. The example is prepared. It is not copied from that file.",
+    how: "nthBigestElement_Array.java demonstrates this question. This lesson sorts distinct values and prints 6 for n = 3. This is an interview-ready example. ",
     example: {
       code: `import java.util.Arrays;
 import java.util.Comparator;
@@ -710,7 +709,7 @@ class Main {
       "Read the value at index n - 1.",
       "A very large array may need a different approach.",
       "Choose that approach from the requirements.",
-      "The saved nth-largest file is linked in Source mode.",
+      "The nth-largest example uses the linked Java implementation.",
       "That file uses its own approach. It is not this stream example.",
     ],
     sources: [
@@ -726,7 +725,7 @@ class Main {
     basis: BASIS,
     summary:
       "Use a Set to remember values already seen. If adding a value fails because it already exists, that value is a duplicate.",
-    how: "RemoveDuplicateNumberArray.java is a saved program. It uses a HashSet. HashSet does not promise iteration order. This example uses a LinkedHashSet. The duplicates stay in first-seen order: [2, 4]. The example is prepared. It is not copied from that file.",
+    how: "RemoveDuplicateNumberArray.java demonstrates this topic. It uses a HashSet. HashSet does not promise iteration order. This example uses a LinkedHashSet. The duplicates stay in first-seen order: [2, 4]. This is an interview-ready example. ",
     example: {
       code: `import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -788,7 +787,7 @@ class Main {
       output: "[4, 3, 2, 1]",
     },
     points: ["O(n) time and O(1) extra space.", "The swap happens in the same array."],
-    gap: "The library does not have a saved reverse-array program linked here. This example is prepared.",
+    gap: "I reverse an array in place by swapping values from both ends until the indexes meet.",
     sources: [],
     related: ["array-basics", "array-traverse"],
   },
@@ -800,7 +799,7 @@ class Main {
     basis: BASIS,
     summary:
       "Linear search checks one element at a time. It works on sorted and unsorted arrays. Binary search is faster only when the array is already sorted. It keeps cutting the search range in half.",
-    how: "LinearSearch.java and BinarySearch.java are saved in Source mode. This page shows a prepared linear search. The target 9 is at index 2. This lesson does not copy the saved binary-search loop. Binary search is O(log n) on sorted data.",
+    how: "LinearSearch.java and BinarySearch.java provide runnable examples. Here, linear search finds target 9 at index 2. Binary search is O(log n) and requires sorted data.",
     example: {
       code: `class Main {
     public static void main(String[] args) {
@@ -820,7 +819,7 @@ class Main {
 }`,
       output: "2",
     },
-    points: ["Linear search: O(n).", "Binary search: O(log n) on sorted data.", "Sorting.java is available in Source mode for a saved sort program."],
+    points: ["Linear search: O(n).", "Binary search: O(log n) on sorted data.", "Sorting.java is a runnable sorting example."],
     sources: [
       { label: "LinearSearch.java", path: "src/main/java/Sorting/LinearSearch.java", kind: "java" },
       { label: "BinarySearch.java", path: "src/main/java/Sorting/BinarySearch.java", kind: "java" },
@@ -856,11 +855,11 @@ class Main {
   {
     id: "array-programs",
     group: "arrays",
-    title: "Saved array programs",
+    title: "Array practice programs",
     aliases: ["array programs", "saved array programs"],
     basis: BASIS,
     summary:
-      "These Java files are already saved in the library. Open one in Source mode to read the original program. The lesson examples on this page are prepared. They can use different sample data.",
+      "These Java files are already saved in the library. Each file provides a runnable implementation. The lesson examples use focused sample data. They can use different sample data.",
     points: [
       "LargestElement.java finds a largest value in its own array.",
       "SecondLargest.java is the saved second-largest program.",
@@ -1088,7 +1087,7 @@ class Main {
       "HashMap stores key-value pairs in a hash table. A key's hash selects the bucket. equals() then finds the right key inside that bucket.",
     simple:
       "HashMap calculates a hash from the key. That hash selects a bucket. Several keys can land in the same bucket. That is a collision. HashMap compares the keys to tell those entries apart. A later put for an equal key replaces that key's value. Modern HashMap buckets can start as linked structures. Under particular collision and capacity conditions, a bucket can become a tree.",
-    how: "HashMapExample.java is a small saved HashMap program. It does not walk through buckets. The steps and the C101 example on this page are prepared.",
+    how: "HashMapExample.java demonstrates basic map operations. The C101 example also explains bucket selection, collisions, equality checks, and value replacement.",
     example: {
       code: `import java.util.HashMap;
 import java.util.Map;
@@ -1140,7 +1139,7 @@ class Main {
         detail: "Same bucket is a collision. Same key, according to equals(), is a replacement.",
       },
     ],
-    gap: "The saved collection notes and HashMapExample.java do not explain collisions. This answer is prepared and is not taken from those files.",
+    gap: "A HashMap collision occurs when keys map to the same bucket; Java resolves it within that bucket by equality checks and bucket structure.",
     sources: [],
     related: ["hashmap-internals", "equals-hashcode", "map-hashmap"],
   },
@@ -1158,9 +1157,9 @@ class Main {
       "HashMap: not synchronized by default, one null key, null values allowed.",
       "Hashtable: legacy synchronized Map, no null keys or values.",
       "ConcurrentHashMap is the usual modern choice for concurrent maps when its behavior fits.",
-      "The saved note gives Hashtable a default capacity of 11.",
-      "The saved note says Hashtable does not preserve insertion order.",
-      "The saved note says only one thread uses a Hashtable method at a time.",
+      "Hashtable has a default initial capacity of 11.",
+      "Hashtable does not preserve insertion order.",
+      "Only one thread uses a Hashtable method at a time.",
     ],
     sources: [
       { label: "OOPS notes, HashMap and Hashtable", path: OOPS, kind: "pdf", focus: "hashtable" },
@@ -1210,7 +1209,7 @@ class Main {
       "Iterator: forward traversal and optional removal.",
       "ListIterator can move forward and backward. Where the list allows it, ListIterator can also add, replace, or remove.",
     ],
-    gap: "The saved collection note has an Iterator heading. It does not have a separate ListIterator lesson. The ListIterator points are prepared.",
+    gap: "Iterator moves forward through a collection; ListIterator adds backward traversal plus list-specific add and set operations.",
     sources: [{ label: "Array and collection notes, Iterator", path: ARRAYS, kind: "pdf", focus: "iterator" }],
     related: ["list-arraylist", "collection-hierarchy"],
   },

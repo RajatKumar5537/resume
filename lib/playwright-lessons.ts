@@ -1,7 +1,7 @@
 import type { ConceptGroupId, ConceptLesson } from "./concepts";
 import { PLAYWRIGHT_ADVANCED, PLAYWRIGHT_ADVANCED_GROUPS } from "./playwright-advanced";
 
-const BASIS = "Prepared interview explanation. It is not a quotation from the saved PDF.";
+const BASIS = "Interview-ready answer.";
 const PDF = "Interview_PDF/Playwright.pdf";
 
 export const PLAYWRIGHT_GROUPS: { id: ConceptGroupId; title: string }[] = [
@@ -30,13 +30,13 @@ export const PLAYWRIGHT_CONCEPTS: ConceptLesson[] = [
     simple:
       "I use Playwright when I need a real browser to click through a web app. The same test code can target more than one browser engine.",
     points: [
-      "The saved note calls it an open-source automation library for end-to-end testing.",
+      "Playwright is an open-source automation library for end-to-end testing.",
       "One API covers Chromium, Firefox, and WebKit.",
-      "The saved note names cross-browser testing, parallel testing, network interception, and headless and headful modes.",
+      "It supports cross-browser testing, parallel execution, network interception, and headless or headed modes.",
       "A test receives a page. That page belongs to one browser context.",
       "I do not treat page.context() as the way to create a second user.",
     ],
-    how: "The saved note says a new context is created with page.context(). That call returns the context the page already belongs to. A separate isolated session is browser.newContext(). Close that context when the second user is finished. The note also says network interception can modify requests and responses. The current call is page.route().",
+    how: "A new context is created with page.context(). That call returns the context the page already belongs to. A separate isolated session is browser.newContext(). Close that context when the second user is finished. network interception can modify requests and responses. The current call is page.route().",
     example: {
       code: `test('second user sees a fresh session', async ({ browser }) => {
   const context = await browser.newContext();
@@ -51,12 +51,12 @@ export const PLAYWRIGHT_CONCEPTS: ConceptLesson[] = [
       {
         prompt: "How do you handle browser contexts in Playwright?",
         short: "A context is an isolated browser session, with its own cookies and storage. page.context() returns the current one. browser.newContext() creates another one.",
-        detail: "The saved note says to create a context with page.context(). That does not create a new context. Use browser.newContext() when two users must not share cookies.",
+        detail: "To create a context with page.context(). That does not create a new context. Use browser.newContext() when two users must not share cookies.",
       },
       {
         prompt: "What is the purpose of network interception in Playwright?",
         short: "page.route() can mock, change, or block a request before the app receives the real response.",
-        detail: "The saved note says this helps API checks, mocked responses, and network debugging. route.fulfill() returns a fake response. route.continue() sends the real request. route.abort() stops it.",
+        detail: "This helps API checks, mocked responses, and network debugging. route.fulfill() returns a fake response. route.continue() sends the real request. route.abort() stops it.",
       },
     ],
     sources: pdf("Playwright.pdf, page 1", "main features"),
@@ -73,8 +73,8 @@ export const PLAYWRIGHT_CONCEPTS: ConceptLesson[] = [
     simple:
       "I pick the tool that matches the language and the team. Selenium is a strong Java choice. Playwright is a strong JavaScript choice when I want waiting and tracing built in.",
     points: [
-      "The saved note says Selenium is mature, supports multiple languages, and has a large community.",
-      "The same note says Playwright is newer, with easier setup, built-in parallel execution, and network interception.",
+      "Selenium is mature, supports multiple languages, and has a large community.",
+      "Playwright is newer, with easier setup, built-in parallel execution, and network interception.",
       "Selenium talks to a browser through a driver. Playwright talks to the browser over its own protocol.",
       "Playwright waits for an element to be ready before click and fill. Selenium needs an explicit wait for the same pause.",
       "This comparison is about the tools. It is not a claim about one project’s pass rate.",
@@ -96,23 +96,23 @@ export const PLAYWRIGHT_CONCEPTS: ConceptLesson[] = [
     aliases: ["install playwright", "npm install playwright", "npm init playwright"],
     basis: BASIS,
     summary:
-      "For a new project I run npm init playwright@latest. That installs @playwright/test, the browsers, and a starter config. The saved note only shows npm install @playwright/test, which installs the package and still needs the browsers.",
+      "For a new project I run npm init playwright@latest. That installs @playwright/test, the browsers, and a starter config. npm install @playwright/test installs the package, but I still need to install the browsers.",
     simple:
       "The package is the test runner. The browsers are a separate download. A test cannot open Chromium until both are present.",
     points: [
-      "The saved command is npm install @playwright/test.",
+      "The package-install command is npm install @playwright/test.",
       "That command does not download Chromium, Firefox, or WebKit.",
       "npx playwright install downloads the browsers.",
       "npm init playwright@latest is the current starter. Choose JavaScript when it asks.",
       "These lessons stay in JavaScript. TypeScript can wait.",
     ],
-    how: "I keep the saved install topic, and I do not leave the browsers out. After the package install, npx playwright install is the missing step. The init command does both and adds playwright.config.js plus an example test.",
+    how: "I keep the installation topic, and I do not leave the browsers out. After the package install, npx playwright install is the missing step. The init command does both and adds playwright.config.js plus an example test.",
     example: {
       code: `npm init playwright@latest
 npm install -D @playwright/test
 npx playwright install`,
       output:
-        "These are shell commands, not a test. The first command is the starter. The next two lines are the manual package install from the saved note, plus the browser download the note does not show. They were not run here.",
+        "These are shell commands, not a test. The first command is the starter. The next two lines are the manual package install, plus the required browser download. They were not run here.",
     },
     sources: pdf("Playwright.pdf, page 1", "npm install"),
     related: ["pw-basic-test", "pw-what", "pw-headless"],
@@ -124,12 +124,12 @@ npx playwright install`,
     aliases: ["headless", "headed", "headful", "ui mode"],
     basis: BASIS,
     summary:
-      "Headless runs the browser without a window. That is the default and the usual CI mode. Headed mode shows the window so I can watch the test. The saved note calls the visible mode headful. The current flag is --headed.",
+      "Headless runs the browser without a window. That is the default and the usual CI mode. Headed mode shows the window so I can watch the test. The visible mode is also called headful. The current flag is --headed.",
     simple:
       "I run headless when I only need the result. I run headed when I need to see where the click landed.",
     points: [
       "Headless has no user interface. It suits a pipeline.",
-      "The saved note says headful mode shows the interface.",
+      "Headful mode shows the interface.",
       "The command I use is npx playwright test --headed.",
       "There is no --headful flag in the current CLI.",
       "UI Mode is a separate window for watching and picking tests. It is npx playwright test --ui.",
@@ -163,7 +163,7 @@ npx playwright test --ui`,
     simple:
       "Without await, the next line starts before the click or the navigation has finished. The failure then looks random.",
     points: [
-      "The saved note says async declares an asynchronous function that returns a promise.",
+      "Async declares an asynchronous function that returns a promise.",
       "await is used inside that function and waits for the promise to resolve or reject.",
       "The test function itself is async ({ page }) => { ... }.",
       "await page.goto(), await locator.click(), and await expect() are the normal pattern.",
@@ -189,18 +189,18 @@ test('title is visible', async ({ page }) => {
     aliases: ["locators", "locator", "getByRole", "getByLabel", "selectors"],
     basis: BASIS,
     summary:
-      "A locator describes how to find an element, and it is re-checked at action time. I prefer getByRole, getByLabel, getByPlaceholder, and getByText. The saved note also shows CSS, XPath, and the older text= selector.",
+      "A locator describes how to find an element, and it is re-checked at action time. I prefer getByRole, getByLabel, getByPlaceholder, and getByText. CSS, XPath, and the older text= selector are also available.",
     simple:
       "I locate a control the way a user sees it: the button name, the field label, or the placeholder. I use CSS or XPath when the page has no accessible name.",
     points: [
       "page.getByRole('button', { name: 'Sign in' }) uses the accessible name.",
       "page.getByLabel('Email') uses the label text.",
       "page.getByPlaceholder('Search') uses the placeholder.",
-      "page.getByText('Example Domain') replaces the saved text= selector for visible text.",
+      "page.getByText('Example Domain') replaces the older text= selector for visible text.",
       "page.locator('css=...') and page.locator('xpath=...') still work for hard cases.",
       "A locator does not click by itself. click(), fill(), or expect() uses it.",
     ],
-    how: "The saved example is page.locator('text=Example Domain'). That text engine still runs. The current user-facing form is page.getByText('Example Domain'). I keep the topic and recommend the newer locator.",
+    how: "The example is page.locator('text=Example Domain'). That text engine still runs. The current user-facing form is page.getByText('Example Domain'). I keep the topic and recommend the newer locator.",
     example: {
       code: `const email = page.getByLabel('Email');
 const search = page.getByPlaceholder('Search');
@@ -228,7 +228,7 @@ await submit.click();`,
       "click() waits until the target can receive the click.",
       "A link is getByRole('link', { name: 'Docs' }), then click().",
       "press('Enter') submits a field when the product uses the keyboard.",
-      "The SauceDemo example below is a prepared illustration. The saved Playwright.pdf does not contain those steps.",
+      "The SauceDemo example below is a illustrative example. The the basic Playwright lesson does not contain those steps.",
     ],
     how: "SauceDemo is a public practice site. standard_user and secret_sauce are the credentials printed on its login page. I use them only as the sample login. I do not treat this snippet as a test I have already run.",
     example: {
@@ -243,7 +243,7 @@ test('SauceDemo login reaches the inventory', async ({ page }) => {
   await expect(page.getByText('Products')).toBeVisible();
 });`,
       output:
-        "This is a complete test file shape. A successful login leaves the inventory URL and shows Products. It was not executed here, and it is not copied from the saved PDF.",
+        "This is a complete test file shape. A successful login leaves the inventory URL and shows Products. It was not executed here, and it is not copied.",
     },
     sources: [],
     related: ["pw-locators", "pw-dropdowns", "pw-basic-test"],
@@ -316,14 +316,14 @@ await pending.getByRole('button', { name: 'Open' }).click();`,
     simple:
       "I assert what the user should see. I let expect poll the page instead of reading the text once and comparing it myself.",
     points: [
-      "Import expect from @playwright/test. The saved basic test uses expect without importing it.",
+      "Import expect from @playwright/test. The basic test uses expect without importing it.",
       "toBeVisible(), toBeHidden(), toHaveText(), and toContainText() check an element.",
       "toHaveValue() checks an input. toBeChecked() checks a checkbox.",
       "toHaveURL() and toHaveTitle() check the page.",
       "toHaveCount() checks how many matches a locator has.",
       "expect(await locator.textContent()).toBe('Saved') does not retry.",
     ],
-    how: "The saved basic test writes expect(page.title()).toBe('Example Domain'). page.title() is a promise, and toBe does not wait for the title to change. The current assertion is await expect(page).toHaveTitle('Example Domain').",
+    how: "The basic test writes expect(page.title()).toBe('Example Domain'). page.title() is a promise, and toBe does not wait for the title to change. The current assertion is await expect(page).toHaveTitle('Example Domain').",
     example: {
       code: `await expect(page).toHaveTitle('Example Domain');
 await expect(page).toHaveURL(/inventory/);
@@ -336,7 +336,7 @@ await expect(page.getByRole('button', { name: 'Pay' })).toBeEnabled();`,
       {
         prompt: "Which assertions come up most often in a UI test?",
         short: "I use toBeVisible, toHaveText, toHaveURL, toHaveTitle, toBeChecked, and toHaveCount.",
-        detail: "The saved PDF does not list these names. They are the current expect matchers I would use for a page, a message, a checkbox, and a list.",
+        detail: " They are the current expect matchers I would use for a page, a message, a checkbox, and a list.",
       },
     ],
     sources: pdf("Playwright.pdf, page 2", "basic test"),
@@ -379,9 +379,9 @@ await expect(page.getByRole('button', { name: 'Pay' })).toBeEnabled();`,
       "actionTimeout and navigationTimeout limit clicks and page loads.",
       "test.setTimeout(60000) changes one slow test.",
       "locator.waitFor() waits for a state such as visible. It is not a sleep.",
-      "The saved note’s page.waitFor('selector:example') is not a current Playwright method.",
+      "The page.waitFor('selector:example') is not a current Playwright method.",
     ],
-    how: "I keep the timeout topic from the saved note and replace the example. page.waitFor with a selector string is not the API. page.waitForTimeout is a sleep. The action already auto-waits. If I must wait for a condition, I use a web-first assertion or locator.waitFor().",
+    how: "I keep the timeout topic and replace the example. page.waitFor with a selector string is not the API. page.waitForTimeout is a sleep. The action already auto-waits. If I must wait for a condition, I use a web-first assertion or locator.waitFor().",
     example: {
       code: `import { defineConfig } from '@playwright/test';
 
@@ -410,7 +410,7 @@ export default defineConfig({
     aliases: ["basic test", "npx playwright test", "example.com"],
     basis: BASIS,
     summary:
-      "A test file imports test and expect, opens a page, and asserts one result. I run it with npx playwright test. The saved example uses require, calls expect without importing it, and leaves the test unclosed.",
+      "A test file imports test and expect, opens a page, and asserts one result. I run it with npx playwright test. The example uses require, calls expect without importing it, and leaves the test unclosed.",
     simple:
       "One file, one test, one page, one assertion. Then I run that file before I add more cases.",
     points: [
@@ -420,7 +420,7 @@ export default defineConfig({
       "npx playwright test --project=chromium runs one browser project.",
       "The SauceDemo login in the actions lesson is a fuller functional example of the same shape.",
     ],
-    how: "The saved test expects the title with toBe and does not await a web-first matcher. I close the braces and use toHaveTitle. The saved file also omits the expect import.",
+    how: "The incomplete test expects the title with toBe and does not await a web-first matcher. I close the braces and use toHaveTitle. The incomplete file also omits the expect import.",
     example: {
       code: `import { test, expect } from '@playwright/test';
 
@@ -429,7 +429,7 @@ test('basic test', async ({ page }) => {
   await expect(page).toHaveTitle('Example Domain');
 });`,
       output:
-        "This is a complete test. npx playwright test runs it headless. The title assertion replaces expect(page.title()).toBe from the saved note. It was not executed here.",
+        "This is a complete test. npx playwright test runs it headless. The title assertion replaces expect(page.title()).toBe. It was not executed here.",
     },
     questions: [
       {
@@ -448,18 +448,18 @@ test('basic test', async ({ page }) => {
     aliases: ["workers", "retries", "parallel", "playwright.config"],
     basis: BASIS,
     summary:
-      "Playwright runs test files in parallel with workers. npx playwright test --workers=4 uses four workers. retries in the config reruns a failed test. The saved command npm playwright test --workers 4 is not the CLI I use.",
+      "Playwright runs test files in parallel with workers. npx playwright test --workers=4 uses four workers. retries in the config reruns a failed test. The package-install command npm playwright test --workers 4 is not the CLI I use.",
     simple:
       "Workers are separate processes. Each should use its own data, because they share the application but not the page.",
     points: [
-      "The saved note says --workers runs tests in parallel.",
+      "--workers controls parallel worker processes.",
       "The current command is npx playwright test --workers=4.",
       "fullyParallel: true also allows tests inside one file to run together.",
       "retries: 2 reruns a failure up to two more times.",
       "A retry belongs in CI when the environment is noisy. It is not a substitute for a stable locator.",
       "workers on a small CI machine are often lower than on a laptop.",
     ],
-    how: "npm playwright test only works if package.json defines that script. The direct command is npx playwright test. The saved note’s four workers are a local override, not a required config value.",
+    how: "npm playwright test only works if package.json defines that script. The direct command is npx playwright test. The four workers are a local override, not a required config value.",
     example: {
       code: `import { defineConfig } from '@playwright/test';
 
@@ -486,14 +486,14 @@ export default defineConfig({
     simple:
       "I open the report first. If the picture is not enough, I open the trace and watch the step that timed out.",
     points: [
-      "page.screenshot({ path: 'example.png' }) saves one picture. The saved note shows that call.",
+      "page.screenshot({ path: 'example.png' }) saves one picture. The example shows that call.",
       "screenshot: 'only-on-failure' in the config saves a picture when a test fails.",
       "npx playwright codegen https://example.com records a draft test.",
       "trace: 'on-first-retry' records a trace when a retry starts.",
       "npx playwright show-report opens the HTML report.",
       "npx playwright show-trace path/to/trace.zip opens Trace Viewer.",
     ],
-    how: "The saved screenshot test uses require and does not close the test. I keep page.screenshot and write a complete test. Codegen, Trace Viewer, and the HTML report are not in the saved two-page PDF. The trace settings I would actually use are off, on, retain-on-failure, and on-first-retry.",
+    how: "The screenshot test uses require and does not close the test. I keep page.screenshot and write a complete test. Codegen, Trace Viewer, and the HTML report are not in this basic lesson. The trace settings I would actually use are off, on, retain-on-failure, and on-first-retry.",
     example: {
       code: `import { test } from '@playwright/test';
 

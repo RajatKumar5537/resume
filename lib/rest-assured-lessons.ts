@@ -1,6 +1,6 @@
 import type { ConceptGroupId, ConceptLesson } from "./concepts";
 
-const BASIS = "Prepared interview explanation. It is not a quotation from the saved REST Assured PDF.";
+const BASIS = "Interview-ready answer.";
 const RA = "Interview_PDF/Rest_Assured.pdf";
 const EXPLAIN = "Interview_PDF/Explain RestAssured.pdf";
 
@@ -62,7 +62,7 @@ export const REST_CONCEPTS: ConceptLesson[] = [
     simple:
       "GET /users/1 reads a user. POST /users creates one. The server should not depend on hidden session state from the previous call. Auth is sent with the request, usually as a token.",
     points: [
-      "The notes list code-on-demand as optional. Most JSON APIs I test do not send executable code.",
+      "Code-on-demand is optional. Most JSON APIs I test do not send executable code.",
       "A URL that uses HTTP is not automatically REST. The contract still decides resource names, status codes, and whether PUT replaces or PATCH patches.",
       "Stateless means the request carries what the server needs. It does not mean the database has no data.",
     ],
@@ -71,7 +71,7 @@ export const REST_CONCEPTS: ConceptLesson[] = [
 POST /products
 PUT /products/123
 DELETE /products/123`,
-      output: "These are the resource examples from the notes. They were not called.",
+      output: "These are the resource examples. They were not called.",
     },
     sources: ra("page 1", "RESTful API"),
     related: ["ra-methods", "ra-what", "ra-parts"],
@@ -87,7 +87,7 @@ DELETE /products/123`,
     simple:
       "Postman is an application with collections, environments, and scripts. REST Assured is code. Both can send GET or POST and check a status. Only the code version lives in the same repository as the Java suite.",
     points: [
-      "The notes say REST Assured gives a readable syntax, supports the common HTTP methods, handles JSON and XML, and works with JUnit and TestNG.",
+      "REST Assured gives me readable syntax, supports the common HTTP methods, handles JSON and XML, and works with JUnit and TestNG.",
       "Postman collections can also run in CI through Newman. That is a different tool, not a REST Assured feature.",
       "I do not treat a Postman pass as proof that the Java suite covers the same assertion.",
     ],
@@ -117,7 +117,7 @@ DELETE /products/123`,
       "If I send PUT with only a name, a replacement-style API may clear the other fields. PATCH is the method I ask for when only one field should change.",
     points: [
       "GET and DELETE normally use the URL, not a JSON body. Some APIs still accept a body. I follow the contract.",
-      "POST is not always 201, and DELETE is not always 204. The notes' sample suite treats DELETE success as an empty body. Public demo APIs often return 200 and an empty object.",
+      "POST is not always 201, and DELETE is not always 204. The sample suite treats DELETE success as an empty body. Public demo APIs often return 200 and an empty object.",
       "PUT and PATCH are not interchangeable just because both can return 200.",
     ],
     table: {
@@ -184,7 +184,7 @@ DELETE /products/123`,
       "The dependency brings in the DSL. baseURI is the host. The path on get() or post() is added after it. The host comes from a test property, not from a production secret in source.",
     points: [
       "The usual coordinate is io.rest-assured:rest-assured. Hamcrest arrives with it. JSON Schema validation needs io.rest-assured:json-schema-validator.",
-      "The notes use TestNG @BeforeClass to set baseURI before the tests in that class.",
+      "I use TestNG @BeforeClass to set baseURI before the tests in that class.",
       "JUnit and TestNG both work. I stay with the runner the project already uses.",
     ],
     example: {
@@ -213,8 +213,8 @@ public class ApiSetup {
     simple:
       "I read a test as: given this request, when I call the API, then I expect this result. when() is optional sugar. given().get(...) is valid.",
     points: [
-      "The notes put content type, cookies, auth, params, and headers in given().",
-      "The notes put the HTTP method in when(), and status, extraction, headers, cookies, and body checks in then().",
+      "I put content type, cookies, auth, params, and headers in given().",
+      "I put the HTTP method in when(), and status, extraction, headers, cookies, and body checks in then().",
       "A test with no then() assertion only proves that the client did not throw. I still assert the contract.",
     ],
     sources: ra("page 2", "given"),
@@ -268,7 +268,7 @@ public class ApiTest {
     simple:
       "POST /users with a name and job asks the server to create a user. The response might be 201 with an id, or 200 with the saved object. The contract, not the tool, decides.",
     points: [
-      "The notes show a raw JSON string and a HashMap. Both are valid. The Map needs a JSON library to become a JSON object.",
+      "I can send a raw JSON string or a HashMap. Both are valid. The Map needs a JSON library to become a JSON object.",
       "Without content type application/json, the server may answer 415.",
       "I use example data. This call was not sent.",
     ],
@@ -307,7 +307,7 @@ given()
     points: [
       "A JSON string must be valid JSON. A trailing comma is a malformed body and often returns 400.",
       "A file is read from the test resources path I control, not from a laptop path that only I have.",
-      "Serialization of a POJO is a separate topic. The notes themselves show the string and the HashMap.",
+      "Serialization of a POJO is a separate topic from sending a string or a HashMap.",
     ],
     example: {
       code: `given().contentType("application/json")
@@ -329,7 +329,7 @@ given().contentType("application/json")
     summary:
       "PUT and PATCH both use body() and a path that identifies the record. I treat PUT as replacement and PATCH as a partial change, then I read the resource again and check that untouched fields stayed put.",
     simple:
-      "The notes' PATCH sample sends only the title. That matches a partial update. A PUT sample that sends the whole object matches replacement. The service under test may still differ, so I confirm the contract.",
+      "The PATCH sample sends only the title. That matches a partial update. A PUT sample that sends the whole object matches replacement. The service under test may still differ, so I confirm the contract.",
     points: [
       "I identify the record with a path id I just created, not with a hard-coded id that another test can change.",
       "After 200, I GET the same id. The changed field must be new. The fields I did not mean to change must be old.",
@@ -360,7 +360,7 @@ given().contentType("application/json")
     simple:
       "I delete only data this test created. A delete of a shared fixture breaks the next test. If the API has no delete, I do not invent one.",
     points: [
-      "The framework notes expect a successful delete to have an empty body. Many APIs return 204 with no body, or 200 with an empty object. I assert the documented shape.",
+      "A successful delete can have an empty body. Many APIs return 204 with no body, or 200 with an empty object. I assert the documented shape.",
       "After delete, a second delete may be 404 or 204. I check the contract before calling it idempotent.",
       "deleteMany-style cleanup does not belong in an API test. I delete by the id I extracted.",
     ],
@@ -392,7 +392,7 @@ given()
     simple:
       "For GET /users/{id}?status=active, id is a path parameter and status is a query parameter. A login form uses formParam, not a JSON body.",
     points: [
-      "The notes say param() follows the method: it is a shortcut, not a third place to store data. POST can turn param() into a form field. I do not use it for JSON.",
+      "param() follows the method: it is a shortcut, not a third place to store data. POST can turn param() into a form field. I do not use it for JSON.",
       "pathParam(\"id\", 1) with /users/{id} becomes /users/1. A query parameter would leave the brace unfilled.",
       "The sample form uses a placeholder username and password. I still avoid logging that body.",
     ],
@@ -426,7 +426,7 @@ given()
     simple:
       "Content-Type tells the server how to read the body. Accept tells it how I want the answer. A session cookie is a name and value, not a JSON field.",
     points: [
-      "The notes extract a cookie with the name \"Stirng\". That is a typo. I use the cookie name the server sets, then send that name back.",
+      "An example cookie name, \"Stirng\", is a typo. That is a typo. I use the cookie name the server sets, then send that name back.",
       "An exact header(\"Content-Type\", \"application/json\") fails when the value is application/json;charset=UTF-8.",
       "I do not copy a session cookie from production into a test.",
     ],
@@ -457,7 +457,7 @@ given()
     simple:
       "The request is a form with a file field. REST Assured builds the boundary. I assert the status and the id or file name the contract returns, then I do not leave a large file behind if the API can delete it.",
     points: [
-      "The notes use new File(\"path/to/file.txt\") and the part name \"file\". The part name must match the API.",
+      "I use new File(\"path/to/file.txt\") and a multipart name such as \"file\". The part name must match the API.",
       "A missing file throws before the request is sent. That failure is local, not a 404 from the server.",
       "This website does not include that sample file, and the upload was not sent.",
     ],
@@ -486,7 +486,7 @@ given()
     simple:
       "I check the code first, then the fields that matter, then the content type. A cookie assertion uses the cookie name the server documents.",
     points: [
-      "The notes check userId, id, and title as top-level fields. That matches a flat post object. It does not match a body wrapped in data unless I change the path.",
+      "I check userId, id, and title as top-level fields for a flat post object. That matches a flat post object. It does not match a body wrapped in data unless I change the path.",
       "notNullValue() only proves the field is present. It does not prove the value is correct.",
       "header and cookie checks are exact unless I pass a matcher such as containsString.",
     ],
@@ -513,10 +513,10 @@ given()
     summary:
       "extract().path() returns a value from the JSON body. response.jsonPath().get() does the same after I have stored the response. I use the value in the next request. asString() and getBody().asString() both return the body, not the headers.",
     simple:
-      "The notes contrast asString() with getBody().asString() as whole response versus body. In REST Assured both return the body. Headers come from getHeader() or getHeaders(). log().all() is what shows the exchange.",
+      "asString() and getBody().asString() both return the response body in REST Assured. In REST Assured both return the body. Headers come from getHeader() or getHeaders(). log().all() is what shows the exchange.",
     points: [
       "path(\"id\") can be an Integer, a String, or null. Assigning it straight to int throws if it is null or not a number.",
-      "The notes read title from /posts/1 on a public demo host. That demo shape is { userId, id, title, body }. I still treat the call as an example, not a test I ran.",
+      "A public-demo example reads title from /posts/1. That demo shape is { userId, id, title, body }. I still treat the call as an example, not a test I ran.",
       "A path that assumes the wrong shape returns null. I compare the path with the actual JSON before changing production code.",
     ],
     example: {
@@ -542,12 +542,12 @@ given()
     aliases: ["nested json", "anonymous json", "json array"],
     basis: BASIS,
     summary:
-      "A dot path reads a nested field. hasItems() checks that an array contains values. An array with no field name is an anonymous root. The notes address it as $ or as an empty path. The path has to match the example JSON.",
+      "A dot path reads a nested field. hasItems() checks that an array contains values. An array with no field name is an anonymous root. I address it as $ or as an empty path. The path has to match the example JSON.",
     simple:
       "data.email means the body has an object data with a field email. It fails if email is at the top level. A root array has no data wrapper, so the path starts at the array.",
     points: [
       "body(\"skills\", hasItem(\"Selenium\")) needs a JSON array of strings. hasItems on the wrong path fails even when the values exist elsewhere.",
-      "The notes' odds.price example is tied to that response shape. I do not reuse the path on a user API.",
+      "The odds.price example is tied to that response shape. I do not reuse the path on a user API.",
       "An empty array is not the same as a missing field. hasSize(0) is the empty check.",
     ],
     example: {
@@ -605,7 +605,7 @@ import static org.hamcrest.Matchers.hasItems;
     simple:
       "equalTo checks that this email is Amit's. The schema checks that email is a string and id is present. I use both when the contract is stable.",
     points: [
-      "This topic is not in the saved REST Assured notes. It is a prepared interview answer.",
+      "This topic is not. The answer is interview-ready.",
       "The dependency is io.rest-assured:json-schema-validator, aligned with the REST Assured version.",
       "A schema failure names the path. I still do not weaken the schema to make a bad response pass.",
     ],
@@ -634,7 +634,7 @@ given()
     simple:
       "person.name means a name element inside person. If the service uses a namespace, the plain path can miss the node even though the text is in the body.",
     points: [
-      "The notes print the name after a GET. That sample was not run from this project.",
+      "I can print the name after a GET. That sample was not run from this project.",
       "I assert the value in the test. System.out is only a debug aid, and it must not print secrets.",
       "JSONPath and XmlPath are different objects. A JSON path does not read XML.",
     ],
@@ -660,7 +660,7 @@ String name = response.xmlPath().getString("person.name");`,
     simple:
       "I build a User, pass it to body(), and the client writes {\"name\":\"Rajat\",\"job\":\"QA\"}. Coming back, as(User.class) fills the fields I can assert without a string path.",
     points: [
-      "This is a prepared explanation. The saved notes show a HashMap and a JSON string, not a POJO mapper.",
+      "A POJO mapper is an alternative to building the body with a HashMap or JSON string.",
       "Private fields need getters and setters, or Jackson annotations, or the JSON can be empty.",
       "A field named id in JSON and userId in Java will not map unless I alias it. That mismatch looks like missing data.",
     ],
@@ -690,7 +690,7 @@ String name = response.xmlPath().getString("person.name");`,
     simple:
       "One sample includes my network, the laptop, and the server at that moment. A limit of 200 milliseconds will flake. I use a loose guard or I leave performance to a tool built for it.",
     points: [
-      "The notes show RestAssured.get(\"/users/eugenp\") and timeIn. I treat eugenp as their example user, not as data I created.",
+      "RestAssured.get(\"/users/eugenp\") and timeIn illustrate response-time measurement. I treat eugenp as example data, not as data I created.",
       "A failed time assertion does not explain a wrong body. I still assert the contract.",
       "I do not retry a slow POST just to get a better number.",
     ],
@@ -714,7 +714,7 @@ long seconds = response.timeIn(TimeUnit.SECONDS);`,
     simple:
       "auth().basic waits for a challenge unless I call preemptive().basic, which sends the header on the first request. auth().oauth2(\"example-token\") sets Authorization: Bearer. The token here is a placeholder.",
     points: [
-      "The notes show auth().basic(\"username\", \"password\") and say Digest and OAuth are supported. They do not show a live OAuth dance. I keep it that way.",
+      "auth().basic(\"username\", \"password\") configures basic authentication. REST Assured also supports Digest and OAuth, but this example does not claim a live OAuth flow.",
       "Most APIs I test want the Basic header immediately, so I use preemptive().basic with values from the environment.",
       "An API key in a query string is easier to leak into logs than a header. I follow the contract and still redact it.",
       "Basic, Bearer, an API key, and OAuth prove identity. The role check behind them is authorization. A 200 with a valid token does not prove that check ran.",
@@ -751,7 +751,7 @@ given()
     simple:
       "Login returns a token. Create returns an id. The next call uses both. If the path is null, I stop and look at the real JSON instead of sending /users/null.",
     points: [
-      "The notes mention regular expressions or JSONPath for dynamic values. JSONPath is the default. A regex is for a value buried in text.",
+      "For dynamic values I use JSONPath by default; a regular expression is another option. JSONPath is the default. A regex is for a value buried in text.",
       "A token expires. A 401 on the second call can be expiry, not a bad URL.",
       "I keep the extracted values inside the test. I do not write them into a shared static that other tests mutate.",
     ],
@@ -779,7 +779,7 @@ given()
     summary:
       "log().status() and log().body() show the response. given().log().all() shows the request, including Authorization and a password body. I log the URI, status, and a redacted body, and I turn full logs on when validation fails.",
     simple:
-      "The framework notes use log().status() and log().body() so a failure is visible. I add a rule: never attach a raw access token or password to a report or a bug.",
+      "I use log().status() and log().body() so a failure is visible. I add a rule: never attach a raw access token or password to a report or a bug.",
     points: [
       "ifValidationFails() keeps passing tests quiet and still captures the failing exchange.",
       "A filter can replace the Authorization header with [redacted] before logging.",
@@ -810,7 +810,7 @@ given()
     simple:
       "A self-signed test certificate fails the JVM trust check before the API runs. Relaxing that check lets the test reach the host. It also hides a bad certificate, so it stays off outside that environment.",
     points: [
-      "The notes call self-signed.badssl.com. That is their public illustration. I did not call it from here.",
+      "self-signed.badssl.com is a public illustration for relaxed HTTPS validation. I did not call it from here.",
       "The better test setup is a certificate the test JVM trusts, not a permanent bypass.",
       "A production failure caused by a certificate is a defect. Relaxing the check would hide it.",
     ],
@@ -871,7 +871,7 @@ given()
     summary:
       "Each API behavior is one @Test. @BeforeClass sets the base URI. A DataProvider feeds invalid and valid rows without copying the request. Tests do not depend on each other's order.",
     simple:
-      "The notes' suite uses @BeforeClass for the host and one @Test per method. I add a data provider when the same call must run with several bodies. Cleanup stays in the test that created the data.",
+      "The suite uses @BeforeClass for the host and one @Test per method. I add a data provider when the same call must run with several bodies. Cleanup stays in the test that created the data.",
     points: [
       "A data-driven 400 case and a 201 case should not share one assertion that ignores the expected code.",
       "parallel=\"methods\" needs independent data. Two tests posting the same email will collide.",

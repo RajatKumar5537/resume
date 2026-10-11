@@ -1,6 +1,6 @@
 import type { ConceptGroupId, ConceptLesson } from "./concepts";
 
-const BASIS = "Prepared senior interview explanation. It is not a quotation from the saved Playwright PDF.";
+const BASIS = "Interview-ready answer.";
 const NOT_RUN = "Illustrative example. It was not executed.";
 
 function lesson(seed: {
@@ -481,7 +481,7 @@ fixtures/
   account.js
 playwright.config.js
 // CI: npx playwright install --with-deps
-//     npx playwright test
+// npx playwright test
 // Upload playwright-report/ and test-results/`,
       output: `${NOT_RUN} This is a folder sketch. The auth file is gitignored. The pipeline must not print secrets.`,
     },

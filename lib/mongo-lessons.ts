@@ -1,6 +1,6 @@
 import type { ConceptGroupId, ConceptLesson } from "./concepts";
 
-const BASIS = "Prepared interview explanation. It is not a quotation from the saved SQL PDF.";
+const BASIS = "Interview-ready answer.";
 const SQL = "Interview_PDF/SQL.pdf";
 
 export const MONGO_GROUPS: { id: ConceptGroupId; title: string }[] = [
@@ -63,11 +63,11 @@ export const MONGO_CONCEPTS: ConceptLesson[] = [
     simple:
       "I translate the goal, then I write the MongoDB query. I do not paste a SQL statement into mongosh.",
     points: [
-      "The SQL note defines SQL as the language for create, read, update, and delete in a relational database.",
+      "SQL is the language for create, read, update, and delete in a relational database.",
       "A table compares to a collection, a row to a document, and a column to a field.",
-      "The SQL note’s primary key identifies one row. MongoDB’s _id identifies one document. A business key such as email still needs its own unique index.",
-      "The SQL note’s foreign key is enforced by the database. MongoDB can store a reference, or embed the related data, without that same automatic check.",
-      "The SQL note normalizes to reduce duplicate data. MongoDB often embeds a small profile instead. Embedding is a choice, not a broken normal form.",
+      "SQL primary key identifies one row. MongoDB’s _id identifies one document. A business key such as email still needs its own unique index.",
+      "SQL foreign key is enforced by the database. MongoDB can store a reference, or embed the related data, without that same automatic check.",
+      "SQL normalization reduces duplicate data. MongoDB often embeds a small profile instead. Embedding is a choice, not a broken normal form.",
     ],
     table: {
       title: "Conceptual comparison",
@@ -81,7 +81,7 @@ export const MONGO_CONCEPTS: ConceptLesson[] = [
         ["Combine tables", "JOIN", "$lookup, or embed the data"],
       ],
     },
-    how: "This table is a map for interviews. $lookup does not reproduce every JOIN in the SQL note. deleteMany is not TRUNCATE. Those differences are in the later lessons.",
+    how: "This table is a map for interviews. $lookup does not reproduce every JOIN. deleteMany is not TRUNCATE. Those differences are in the later lessons.",
     sources: sql("page 1", "What is SQL"),
     related: ["mg-what", "mg-lookup", "mg-id"],
   },
@@ -130,13 +130,13 @@ export const MONGO_CONCEPTS: ConceptLesson[] = [
     aliases: ["objectid", "_id", "mongodb id"],
     basis: BASIS,
     summary:
-      "_id is the unique identity of a document. If I do not supply one, MongoDB creates an ObjectId. It is the closest idea to the SQL note’s primary key, and it is not a substitute for a business key such as email.",
+      "_id is the unique identity of a document. If I do not supply one, MongoDB creates an ObjectId. It is the closest idea to SQL primary key, and it is not a substitute for a business key such as email.",
     simple:
       "Two Amit documents can share a name. They cannot share an _id. Email can still be duplicated until a unique index says otherwise.",
     points: [
       "ObjectId(\"65a000000000000000000001\") is 24 hex characters.",
       "_id is immutable in normal use. Changing a user’s email does not change _id.",
-      "The SQL note’s primary key can be one column or several. _id is a single field, though that field’s value can be a string or a number you chose.",
+      "SQL primary key can be one column or several. _id is a single field, though that field’s value can be a string or a number you chose.",
       "An API that returns the id as a string must be queried with the same type the collection stores.",
     ],
     example: {
@@ -145,7 +145,7 @@ export const MONGO_CONCEPTS: ConceptLesson[] = [
 })`,
       output: "Returns the illustrative Amit document, or null if the stored _id is a string instead of an ObjectId. This query was not executed.",
     },
-    how: "The SQL note says a primary key prevents duplicate rows and identifies each record. _id does that for documents. Referential integrity from the foreign-key paragraph is not automatic for a field that merely holds another document’s id.",
+    how: "A primary key prevents duplicate rows and identifies each record. _id does that for documents. Referential integrity from the foreign-key paragraph is not automatic for a field that merely holds another document’s id.",
     sources: sql("page 1", "primary key"),
     related: ["mg-vs-sql", "mg-bson", "mg-qa-read"],
   },
@@ -156,7 +156,7 @@ export const MONGO_CONCEPTS: ConceptLesson[] = [
     aliases: ["mongodb compass", "mongosh", "connect to mongodb"],
     basis: BASIS,
     summary:
-      "Compass is the visual client. mongosh is the shell where these lessons’ commands run. Both need a connection string, a database, and a collection. I use a local or test database for practice, never a shared production string in notes.",
+      "Compass is the visual client. mongosh is the shell where these lessons’ commands run. Both need a connection string, a database, and a collection. I use a local or test database for practice, never a shared production string.",
     simple:
       "In Compass I open the users collection and paste the filter. In mongosh I type db.users.find with that same filter.",
     points: [
@@ -515,9 +515,9 @@ db.users.updateOne(
     simple:
       "I delete Amit by email only after find shows that the filter is exactly Amit. I do not drop users to remove one person.",
     points: [
-      "The SQL note says DELETE removes rows by a condition and can be rolled back. A MongoDB delete is not automatically reversible. A transaction can change that, and these lessons do not assume one.",
-      "The SQL note says TRUNCATE removes all rows and cannot be rolled back. deleteMany({}) removes all documents, and the collection remains. It is still dangerous. It is not a command to try on shared data.",
-      "The SQL note says DROP deletes the table. drop() deletes the collection.",
+      "DELETE removes rows by a condition and can be rolled back. A MongoDB delete is not automatically reversible. A transaction can change that, and these lessons do not assume one.",
+      "TRUNCATE removes all rows and cannot be rolled back. deleteMany({}) removes all documents, and the collection remains. It is still dangerous. It is not a command to try on shared data.",
+      "DROP deletes the table. drop() deletes the collection.",
       "deleteOne deletes one match even if the filter matches many. Sort is not part of deleteOne. Make the filter unique.",
     ],
     how: "I keep the SQL words for the interview comparison and use the MongoDB commands for the work. Verify the filter with find. Prefer one explicit _id or email.",
@@ -597,8 +597,8 @@ db.users.deleteOne({ email: "amit@example.com" })`,
       "$group’s _id is the group key. _id: \"$status\" groups by the status field. The dollar sign reads the field.",
       "totalUsers: { $sum: 1 } counts documents in the group.",
       "$sort: { totalUsers: -1 } orders those group rows, not the original users.",
-      "The SQL note’s WHERE filters before grouping. A $match before $group does that job. HAVING filters after grouping. A $match after $group does that job.",
-      "The SQL note’s GROUP BY example counts employees by department. The pipeline below counts users by status. Same idea, different syntax.",
+      "SQL WHERE filters before grouping. A $match before $group does that job. HAVING filters after grouping. A $match after $group does that job.",
+      "SQL GROUP BY example counts employees by department. The pipeline below counts users by status. Same idea, different syntax.",
     ],
     example: {
       code: `db.users.aggregate([
@@ -695,9 +695,9 @@ db.users.deleteOne({ email: "amit@example.com" })`,
     simple:
       "Orders stay in the result. The user array is filled when the email matches and empty when it does not. Embedding profile inside the user removes the need for this lookup.",
     points: [
-      "The SQL note’s INNER JOIN keeps only matching rows. A $lookup plus a later match on a non-empty array is the closer inner-join idea.",
+      "SQL INNER JOIN keeps only matching rows. A $lookup plus a later match on a non-empty array is the closer inner-join idea.",
       "LEFT JOIN keeps the left rows and uses null on the right when needed. $lookup keeps the local documents and uses an empty array.",
-      "RIGHT JOIN and FULL JOIN are in the SQL note. $lookup does not provide those by itself.",
+      "RIGHT JOIN and FULL JOIN are. $lookup does not provide those by itself.",
       "from, localField, foreignField, and as are the basic keys. as is the new array field.",
     ],
     example: {
@@ -897,11 +897,11 @@ db.users.find({
     aliases: ["mongodb index", "unique index", "explain"],
     basis: BASIS,
     summary:
-      "An index is an extra structure that helps MongoDB find matching documents without scanning the whole collection. The SQL note describes the same goal: fewer disk reads. An index does not change which documents match. A unique index also rejects duplicate values.",
+      "An index is an extra structure that helps MongoDB find matching documents without scanning the whole collection. The same goal: fewer disk reads. An index does not change which documents match. A unique index also rejects duplicate values.",
     simple:
       "A query can be correct and slow. The index is about the slow part. The filter still decides the result.",
     points: [
-      "The SQL note says an index supports quick retrieval. That purpose carries over. The command does not.",
+      "An index supports quick retrieval. That purpose carries over. The command does not.",
       "db.users.createIndex({ email: 1 }, { unique: true }) is a schema change. I do not run it on a shared database as a casual check.",
       "explain(\"executionStats\") can show an index scan or a collection scan. I use it to investigate a slow test, not as the first lesson in finding Amit.",
       "A regex without an anchor is a common reason an index is not useful.",
@@ -917,7 +917,7 @@ db.users.find({
     aliases: ["shared test database", "safe queries", "read only"],
     basis: BASIS,
     summary:
-      "I start with find and countDocuments. I name the database and the filter in the note. I update or delete only a document the test created, and only after find shows that one document. I never run an empty delete against a shared collection.",
+      "I start with find and countDocuments. I name the database and the filter. I update or delete only a document the test created, and only after find shows that one document. I never run an empty delete against a shared collection.",
     simple:
       "Read is the default. A write needs a filter I have already seen, on data the test owns.",
     points: [

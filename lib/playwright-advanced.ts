@@ -1,7 +1,7 @@
 import type { ConceptGroupId, ConceptLesson } from "./concepts";
 import { PLAYWRIGHT_ADVANCED_MORE } from "./playwright-advanced-more";
 
-const BASIS = "Prepared senior interview explanation. It is not a quotation from the saved Playwright PDF.";
+const BASIS = "Interview-ready answer.";
 const NOT_RUN = "Illustrative example. It was not executed.";
 
 export const PLAYWRIGHT_ADVANCED_GROUPS: { id: ConceptGroupId; title: string }[] = [

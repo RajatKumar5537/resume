@@ -10,7 +10,7 @@ export const HR_LESSONS: ConceptLesson[] = [
     group: "hr-introduction",
     title: "Tell me about yourself",
     aliases: ["self introduction", "introduce yourself", "tell me about yourself", "hr introduction"],
-    basis: "Prepared from Rajat Kumar Pradhan's own introduction.",
+    basis: "Interview-ready answer.",
     summary: `Hi, I'm Rajat Kumar Pradhan. I'm originally from Odisha and currently staying in Delhi.
 
 I have more than five years of experience in QA and Test Automation. I joined my current organization as a QA Team Lead, where I mentored a team of four members. After one year, I was promoted to QA Manager.

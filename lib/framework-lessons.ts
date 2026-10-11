@@ -1,7 +1,7 @@
 import type { ConceptGroupId, ConceptLesson } from "./concepts";
 
 const REVIEW_NOTE =
-  "Prepared from the named repository review. Documented counts and timings were not rerun for this review.";
+  "Interview-ready answer. Documented counts and timings were not rerun for this review.";
 
 export const FRAMEWORK_GROUPS: { id: ConceptGroupId; title: string }[] = [
   { id: "fw-pixel", title: "Pixel Checker" },
@@ -291,7 +291,7 @@ export const FRAMEWORK_LESSONS: ConceptLesson[] = [
     title: "Hybrid Driven Automation Framework — Previous Project",
     aliases: ["hybrid framework", "hybrid driven automation", "selenium framework design"],
     basis:
-      "Prepared from B- Explain of Framework.pdf. This previous Java/Selenium framework is separate from the seven newer Node.js repositories.",
+      "This previous Java/Selenium framework is separate from the seven newer Node.js repositories.",
     summary:
       "My previous framework is hybrid: Excel and properties files supply data and configuration, reusable methods supply common actions, and modules keep scripts separate. TestNG manages browser, login, test, logout and close lifecycle. Maven builds it, Extent Reports and listeners record results and failure screenshots, and Jenkins or Azure Pipelines can run it from version control.",
     simple:
@@ -305,7 +305,7 @@ export const FRAMEWORK_LESSONS: ConceptLesson[] = [
       "Reporting and CI: TestNG HTML plus Extent Reports; listeners save screenshots; Maven runs from a Jenkins or Azure YAML job triggered by a commit, pull request, schedule, or manual action.",
     ],
     how:
-      "Challenges from the PDF are flaky tests, long execution time, environment dependency, and parallel conflicts. Improve the framework with stable waits, reusable methods, config separation and CI. Handle NoSuchElementException and TimeoutException with targeted exception handling and report the details. Coordinate larger teams through divided work and regular stand-ups.",
+      "Challenges are flaky tests, long execution time, environment dependency, and parallel conflicts. Improve the framework with stable waits, reusable methods, config separation and CI. Handle NoSuchElementException and TimeoutException with targeted exception handling and report the details. Coordinate larger teams through divided work and regular stand-ups.",
     questions: [
       {
         prompt: "What did you refactor?",

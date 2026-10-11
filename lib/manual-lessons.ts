@@ -1,7 +1,7 @@
 import type { ConceptGroupId, ConceptLesson } from "./concepts";
 import { MANUAL_SCENARIOS } from "./manual-scenarios";
 
-const BASIS = "Prepared interview explanation. It is not a quotation from the saved PDF.";
+const BASIS = "Interview-ready answer.";
 const PDF = "Interview_PDF/Manual Testing.pdf";
 
 export const MANUAL_GROUPS: { id: ConceptGroupId; title: string }[] = [
@@ -35,7 +35,7 @@ const CORE: ConceptLesson[] = [
       "A test type is what quality we look at: functional, performance, usability, and so on.",
       "A test technique is how we choose inputs: equivalence classes, boundaries, or error guessing.",
       "Smoke, regression, and retesting are ways of executing tests. They are not extra types of quality.",
-      "The saved note describes manual testing as executing cases by hand to find defects and check the requirement. That is one way to test, not the definition of all testing.",
+      "Manual testing as executing cases by hand to find defects and check the requirement. That is one way to test, not the definition of all testing.",
     ],
     sources: pdf("page 1", "Manual testing"),
     related: ["mt-manual-auto", "mt-qa-qc", "mt-func-nonfunc"],
@@ -51,7 +51,7 @@ const CORE: ConceptLesson[] = [
     simple:
       "The tool is faster at the same path. The person is better at a new screen, a confusing message, and a one-time investigation.",
     points: [
-      "The saved note says the engineer writes a script and the tool returns pass or fail.",
+      "The engineer writes a script and the tool returns pass or fail.",
       "Automation still needs a person to choose the case, the data, and what pass means.",
       "A failing script is a signal. I still confirm whether the product is wrong or the script is out of date.",
       "Manual and automated checks can cover the same scenario. The difference is who performs the steps.",
@@ -89,13 +89,13 @@ const CORE: ConceptLesson[] = [
     simple:
       "I can find a wrong rule in a document before anyone codes it. I can find a wrong screen only by using the build.",
     points: [
-      "The saved note checks CRS, SRS, HLD, and LLD during verification, before the software is built.",
-      "The same note calls validation executing cases after coding.",
-      "The useful phrase matches the note: verification is building the product right, validation is building the right product.",
+      "The example uses CRS, SRS, HLD, and LLD during verification, before the software is built.",
+      "Validation executes tests against the built software.",
+      "verification is building the product right, validation is building the right product.",
       "Reviews are not done only by testers. Developers, the product owner, and the customer review as well.",
       "Verification is not limited to the start of the project. A story can be reviewed again when the rule changes.",
     ],
-    how: "The saved note says verification is done by test engineers before construction, and validation by test engineers after coding. That is the note’s wording. In a project, more roles join both activities.",
+    how: "Verification is done by test engineers before construction, and validation by test engineers after coding. That is The wording. In a project, more roles join both activities.",
     sources: pdf("page 12", "Verification"),
     related: ["mt-qa-qc", "mt-review", "mt-acceptance"],
   },
@@ -110,11 +110,11 @@ const CORE: ConceptLesson[] = [
     simple:
       "Functional asks: did the campaign pause? Non-functional asks: was the page understandable, and did it stay up under the expected users?",
     points: [
-      "The saved note calls functional testing a check of each component.",
-      "The same note then lists donkey, under, and optimize testing as the three types of functional testing. Those names are specific to this note. They are not standard industry types.",
-      "Donkey, in the note, means a repeated or meaningless scenario. Under means too few scenarios. Optimize means a sufficient, sensible set.",
+      "Functional testing checks what each component does against its requirement.",
+      "lists donkey, under, and optimize testing as the three types of functional testing. Those names are not standard industry terminology. They are not standard industry types.",
+      "Donkey, means a repeated or meaningless scenario. Under means too few scenarios. Optimize means a sufficient, sensible set.",
       "I use the standard types in an interview: functional, and non-functional such as performance, usability, reliability, and compatibility.",
-      "Performance in the note, load through soak, is non-functional. It is not a functional type.",
+      "Performance, load through soak, is non-functional. It is not a functional type.",
     ],
     sources: pdf("page 5", "Functional Testing"),
     related: ["mt-performance", "mt-usability", "mt-black-white"],
@@ -126,15 +126,15 @@ const CORE: ConceptLesson[] = [
     aliases: ["black box", "white box", "white-box"],
     basis: BASIS,
     summary:
-      "Black-box testing uses the requirement and the screen. I do not need the source code. White-box testing uses the internal structure: branches, queries, and conditions. The saved note says white-box is checking internal code lines, done by a developer or a white-box tester, after coding.",
+      "Black-box testing uses the requirement and the screen. I do not need the source code. White-box testing uses the internal structure: branches, queries, and conditions. White-box is checking internal code lines, done by a developer or a white-box tester, after coding.",
     simple:
       "Black-box asks what the user sees. White-box asks which path inside the code ran. A tester can do either one. White-box is not reserved for developers.",
     points: [
-      "The note also calls black-box functional or behavioral testing. Functional is a test type. Black-box is a way of testing without the code. They overlap, but they are not the same word.",
-      "The note already says a white-box tester, not only a developer, can do this work.",
+      "calls black-box functional or behavioral testing. Functional is a test type. Black-box is a way of testing without the code. They overlap, but they are not the same word.",
+      "A white-box tester, not only a developer, can do this work.",
       "A QA engineer can review a condition, an SQL filter, or an API rule without owning the product design.",
       "Gray-box uses both: I know the status values in the API and I still test from the screen.",
-      "Yellow box and red box appear later in the note. I treat those as names from this note, not as standard box types.",
+      "Yellow box and red box appear later. I treat those as nonstandard names, not as standard box types.",
     ],
     sources: pdf("page 1", "Black Box"),
     related: ["mt-func-nonfunc", "mt-techniques", "mt-data-match"],
@@ -146,15 +146,15 @@ const CORE: ConceptLesson[] = [
     aliases: ["smoke testing", "sanity testing", "smoke and sanity"],
     basis: BASIS,
     summary:
-      "Smoke is a shallow check across the critical features to see if the build is worth testing. Sanity is a narrow check of one changed area to see if it is stable enough for deeper testing. The saved note first treats them as the same health check, then gives a difference.",
+      "Smoke is a shallow check across the critical features to see if the build is worth testing. Sanity is a narrow check of one changed area to see if it is stable enough for deeper testing. They overlap as health checks, but their scope is different.",
     simple:
       "Smoke asks: is the build alive? Sanity asks: is this fix or this feature stable enough to continue?",
     points: [
-      "The note also calls smoke a dry run and a health check, and says it finds blocker defects early.",
-      "The note’s table says smoke is shallow and wide, and sanity is deep and narrow.",
-      "The note says smoke uses only valid input. I keep the critical happy path in smoke. A full negative suite is not smoke.",
-      "The note says sanity cannot be automated. I do not use that as a rule. A stable sanity check can be a script.",
-      "The note says sanity has no test cases. A short checklist is still useful. It does not have to be the full suite.",
+      "calls smoke a dry run and a health check, and says it finds blocker defects early.",
+      "The table says smoke is shallow and wide, and sanity is deep and narrow.",
+      "Smoke uses only valid input. I keep the critical happy path in smoke. A full negative suite is not smoke.",
+      "Sanity cannot be automated. I do not use that as a rule. A stable sanity check can be a script.",
+      "Sanity has no test cases. A short checklist is still useful. It does not have to be the full suite.",
       "Developers can run smoke. Testers can run both.",
     ],
     compare: {
@@ -164,7 +164,7 @@ const CORE: ConceptLesson[] = [
       rightLabel: "Sanity",
       right: "Narrow and deeper. One fix or one area, including a relevant negative check. Decides whether that area is ready for more testing.",
     },
-    how: "The note says there is no difference, and then the table lists differences. I use the table’s shallow-versus-narrow idea. I do not repeat the line that sanity cannot be automated.",
+    how: "There is no difference, and then the table lists differences. I use the table’s shallow-versus-narrow idea. I do not repeat the line that sanity cannot be automated.",
     sources: pdf("page 1", "Smoke Testing"),
     related: ["mt-regression", "mt-retest", "mt-time"],
   },
@@ -179,11 +179,11 @@ const CORE: ConceptLesson[] = [
     simple:
       "The fix is retested on its own. Regression is the neighboring behavior I am afraid the fix touched.",
     points: [
-      "The note says a change is adding, modifying, removing a feature, or fixing a bug.",
-      "The note’s page 2 goal is to make sure the unchanged feature is not broken.",
-      "Unit regression, in the note, means testing only the change or the fix. That overlaps retesting. I call that the retest, not the regression.",
-      "Regional regression, in the note, is the change plus the impacted area. That is the set I usually run.",
-      "Full regression, in the note, includes the remaining features. I use it for a release candidate, not for every story.",
+      "A change is adding, modifying, removing a feature, or fixing a bug.",
+      "The page 2 goal is to make sure the unchanged feature is not broken.",
+      "Unit regression, means testing only the change or the fix. That overlaps retesting. I call that the retest, not the regression.",
+      "Regional regression, is the change plus the impacted area. That is the set I usually run.",
+      "Full regression, includes the remaining features. I use it for a release candidate, not for every story.",
       "The page 3 table says regression makes sure the feature is affected. That wording fights page 2. The goal is to show it is not broken.",
       "The table also says regression uses pass test cases. I start from cases that passed before, then add the impacted ones.",
     ],
@@ -201,9 +201,9 @@ const CORE: ConceptLesson[] = [
     simple:
       "Retest answers: is the reported bug gone? Regression answers: did the repair break something else?",
     points: [
-      "The note says retesting checks that the fixed defect is really fixed, using the failed cases.",
-      "The note says regression is generic and retesting is planned. Both should be planned. The retest plan is the original defect.",
-      "The note says retesting can be only manual. A stable failed case can be automated and run again.",
+      "Retesting checks that the fixed defect is really fixed, using the failed cases.",
+      "Regression is generic and retesting is planned. Both should be planned. The retest plan is the original defect.",
+      "Retesting can be only manual. A stable failed case can be automated and run again.",
       "If the same bug returns, I reopen that defect with the new build and the new actual result.",
       "If a different path breaks, that is a new defect, linked to the fix.",
     ],
@@ -217,14 +217,14 @@ const CORE: ConceptLesson[] = [
     aliases: ["exploratory testing", "ad hoc", "adhoc", "negative testing"],
     basis: BASIS,
     summary:
-      "Exploratory testing is learning the product and designing the next check in the same session, then writing down what I tried. Ad hoc testing, in the note, is random testing without formal cases. Negative testing is a designed check with invalid input. They are not three names for the same thing.",
+      "Exploratory testing is learning the product and designing the next check in the same session, then writing down what I tried. Ad hoc testing, is random testing without formal cases. Negative testing is a designed check with invalid input. They are not three names for the same thing.",
     simple:
       "Exploratory has a mission. Ad hoc is unscripted. Negative is a planned invalid case, such as a bad amount or a missing card.",
     points: [
-      "The note’s exploratory flow is: understand, identify scenarios, prioritize, document, then execute.",
-      "The note groups ad hoc with gorilla, monkey, negative, and out-of-the-box testing. I do not treat those as synonyms.",
-      "Buddy testing in the note is a tester with a developer. Pair testing is a tester with another tester. Monkey testing is input without a logical case.",
-      "The note’s examples are useful negatives: pay an unregistered number, same pickup and drop, withdraw without a card.",
+      "The exploratory flow is: understand, identify scenarios, prioritize, document, then execute.",
+      "Ad hoc, gorilla, monkey, negative, and out-of-the-box testing are distinct approaches; I do not treat them as synonyms.",
+      "Buddy testing is a tester with a developer. Pair testing is a tester with another tester. Monkey testing is input without a logical case.",
+      "The examples are useful negatives: pay an unregistered number, same pickup and drop, withdraw without a card.",
       "I keep those as negative or exploratory ideas. I do not call every negative test ad hoc.",
     ],
     sources: pdf("page 7", "Exploratory"),
@@ -241,11 +241,11 @@ const CORE: ConceptLesson[] = [
     simple:
       "A screen can be right and still send the wrong status to the next service. Integration is that join.",
     points: [
-      "The note defines it as testing the data flow between modules.",
+      "It is testing the data flow between modules.",
       "Incremental means adding modules and testing as they are added.",
-      "Top-down, in the note, adds a child of the previous module. Bottom-up adds a parent of the previous module.",
-      "Non-incremental, in the note, gathers the modules and tests them in one shot. The note says taste. It means test. This is often called big-bang.",
-      "Stubs or drivers stand in for a module that is not ready. The note does not name them. I mention them only as the usual support for top-down or bottom-up.",
+      "Top-down, adds a child of the previous module. Bottom-up adds a parent of the previous module.",
+      "Non-incremental, gathers the modules and tests them in one shot. Taste. It means test. This is often called big-bang.",
+      "Stubs or drivers stand in for a module that is not ready. I use them as the usual support for top-down or bottom-up.",
     ],
     sources: pdf("page 5", "Integration Testing"),
     related: ["mt-system", "mt-data-match", "mt-mismatch"],
@@ -257,14 +257,14 @@ const CORE: ConceptLesson[] = [
     aliases: ["system testing", "end to end", "end-to-end testing"],
     basis: BASIS,
     summary:
-      "System testing exercises the integrated product in an environment close to production, against the requirements. End-to-end testing follows a business journey across features, and sometimes across systems. The note treats system testing as that end-to-end check. I keep the journey idea, and I still separate the whole-system check from one business path.",
+      "System testing exercises the integrated product in an environment close to production, against the requirements. End-to-end testing follows a business journey across features, and sometimes across systems. The example uses system testing as that end-to-end check. I keep the journey idea, and I still separate the whole-system check from one business path.",
     simple:
       "System testing asks whether this build, in a production-like setup, meets the requirement. End-to-end asks whether a user can finish the journey.",
     points: [
-      "The note says system testing starts when a minimum set of features is ready.",
+      "System testing starts when a minimum set of features is ready.",
       "A development server is for building. A testing server is for test. Pre-production is close to production and can carry a partial business run.",
       "I do not run destructive tests on production.",
-      "End-to-end, in the note, navigates the features and checks that the final feature works.",
+      "End-to-end, navigates the features and checks that the final feature works.",
       "A login-to-report journey can pass while a separate admin screen is still untested. I say which journey I covered.",
     ],
     sources: pdf("page 7", "System Testing"),
@@ -281,11 +281,11 @@ const CORE: ConceptLesson[] = [
     simple:
       "Alpha is inside, before we hand it over. UAT is the business using real scenarios. Beta is a wider user group.",
     points: [
-      "The note calls acceptance red box testing. That name is specific to this note. I say acceptance or UAT in an interview.",
-      "The note gives four approaches: an engineer at the customer site, the end user over a period, our engineer at the customer site with their scenarios, and our engineer at our site with their scenarios.",
-      "UAT in the note is the end user running the business on the software for a period.",
-      "The note says alpha is done by the test engineer before acceptance, and it adds No Defect. Defects are expected in alpha. No Defect is not part of the definition.",
-      "Beta, in the note, is end-user testing, and the product is released to the market from that feedback.",
+      "I call this acceptance testing or UAT. Red-box testing is not standard industry terminology.",
+      "Acceptance can involve an engineer at the customer site, end users testing over a period, our engineer using customer scenarios on-site, or our engineer using those scenarios in our environment.",
+      "UAT is the end user running the business on the software for a period.",
+      "Alpha is done by the test engineer before acceptance, and it adds No Defect. Defects are expected in alpha. No Defect is not part of the definition.",
+      "Beta, is end-user testing, and the product is released to the market from that feedback.",
     ],
     sources: pdf("page 8", "Acceptance Testing"),
     related: ["mt-system", "mt-vv", "mt-release"],
@@ -297,15 +297,15 @@ const CORE: ConceptLesson[] = [
     aliases: ["usability testing", "accessibility", "yellow box"],
     basis: BASIS,
     summary:
-      "Usability checks whether a person can understand and finish the task: labels, navigation, and feedback. Accessibility checks whether people with different abilities can do that task, including keyboard use, labels, and contrast. The note’s 508 and ADA line is the accessibility topic.",
+      "Usability checks whether a person can understand and finish the task: labels, navigation, and feedback. Accessibility checks whether people with different abilities can do that task, including keyboard use, labels, and contrast. The 508 and ADA line is the accessibility topic.",
     simple:
       "Usability asks: is this easy? Accessibility asks: can someone who does not use a mouse, or who cannot see the color, still finish it?",
     points: [
-      "The note’s usability list is accessible, navigation, look and feel, easy language, and easy to understand.",
+      "The usability list is accessible, navigation, look and feel, easy language, and easy to understand.",
       "Its checklist includes a forgot-password path, alt text for links and diagrams, a home link, and navigation on every page.",
-      "The note says this feedback comes from end users.",
-      "The note’s accessibility wording is about a physically challenged person. I also include vision, hearing, motor, and cognitive access, without special tools in this lesson.",
-      "Yellow box, on page 8, means testing warning messages and is called a subset of usability. On page 4 the note also calls usability itself yellow box. I use usability and warning-message checks, not yellow box, as the interview terms.",
+      "This feedback comes from end users.",
+      "The accessibility wording is about a physically challenged person. I also include vision, hearing, motor, and cognitive access, without special tools in this lesson.",
+      "Yellow box, on page 8, means testing warning messages and is called a subset of usability. On page 4 calls usability itself yellow box. I use usability and warning-message checks, not yellow box, as the interview terms.",
     ],
     sources: pdf("page 4", "Usability Testing"),
     related: ["mt-login", "mt-browsers", "mt-func-nonfunc"],
@@ -321,11 +321,11 @@ const CORE: ConceptLesson[] = [
     simple:
       "I do not need a performance lab to explain the difference. I do need the designed user count before I call a run load or stress.",
     points: [
-      "The note defines performance as response time and stability under load.",
+      "Performance is response time and stability under load.",
       "Load is less than or equal to the designed users. Stress is more than that number.",
       "Volume is a huge data transfer. Soak is continuous load for a period.",
-      "Reliability, in the note, is the same function running for a long time. It is close to soak. I describe reliability as continued correct behavior, and soak as the long load run.",
-      "Recovery, in the note, is how fast the software recovers from a crash. The note says crass. It means crash.",
+      "Reliability is continued correct behavior over time. Soak testing checks that behavior under a sustained load.",
+      "Recovery, is how fast the software recovers from a crash. Crass. It means crash.",
       "These are types of non-functional testing, not functional subtypes.",
     ],
     sources: pdf("page 4", "Load Testing"),
@@ -342,8 +342,8 @@ const CORE: ConceptLesson[] = [
     simple:
       "Cross-browser asks: does this flow work in Chrome and Safari? Localization asks: does the Hindi or Arabic screen still show the amount and the date correctly?",
     points: [
-      "The note’s comparison, or parallel, testing checks a new product against an existing one, such as two cab apps. That is a feature comparison, not browser compatibility.",
-      "The note uses globalization both for developing multiple languages and for testing them.",
+      "The comparison, or parallel, testing checks a new product against an existing one, such as two cab apps. That is a feature comparison, not browser compatibility.",
+      "The example uses globalization both for developing multiple languages and for testing them.",
       "It names internationalization as I18N and localization as L10N. The 18 and 10 count the letters between the first and last letter.",
       "I test one primary browser fully and the critical path on the others.",
       "Text length, date format, currency, and right-to-left layout are the localization risks. I do not need a separate tool lesson for that.",
@@ -421,8 +421,8 @@ Status: Pass or Fail`,
     simple:
       "Positive proves the feature works. Negative proves it refuses the wrong use.",
     points: [
-      "The note ties positive testing to smoke. Smoke is mostly the valid critical path. Positive testing is bigger than smoke.",
-      "Negative testing is designed. It is not the same as the note’s ad hoc or monkey testing.",
+      "Smoke testing usually follows the valid critical path, but positive testing covers more than the smoke suite.",
+      "Negative testing is designed. It is not the same as The ad hoc or monkey testing.",
       "Empty, too long, the wrong type, and a duplicate submit are typical negative ideas.",
       "The expected result of a negative case is the error or the unchanged data, not a blank actual column.",
     ],
@@ -440,11 +440,11 @@ Status: Pass or Fail`,
     simple:
       "I do not test every number from 1 to 1000. I test a valid middle, the edges, and a value outside.",
     points: [
-      "The note’s first Pressman rule: for a range, one valid and two invalid inputs.",
+      "The first Pressman rule: for a range, one valid and two invalid inputs.",
       "The second rule: for a set, all valid members and two invalid inputs.",
       "The third rule: for a Boolean, both true and false.",
-      "Boundary analysis in the note: for A to B, test A, A+1, A-1, B, B+1, and B-1.",
-      "Error guessing in the note is guessing possible errors and testing those. It adds ideas. It does not replace the range rules.",
+      "Boundary analysis: for A to B, test A, A+1, A-1, B, B+1, and B-1.",
+      "Error guessing is guessing possible errors and testing those. It adds ideas. It does not replace the range rules.",
       "These are design techniques. They are not test levels and they are not smoke or regression.",
     ],
     example: {
@@ -454,7 +454,7 @@ Boundaries: 0, 1, 2, 499, 500, 501
 Error guess: blank amount, 500.5 if decimals are not allowed, Pay pressed twice`,
       output: "A design sample for a transfer limit. It was not executed.",
     },
-    how: "The note says these techniques improve coverage. I still keep a business scenario around the numbers so the case is not only a table of inputs.",
+    how: "These techniques improve coverage. I still keep a business scenario around the numbers so the case is not only a table of inputs.",
     sources: pdf("page 9", "Equivalence"),
     related: ["mt-positive-negative", "mt-payment", "mt-write-case"],
   },
@@ -496,7 +496,7 @@ Error guess: blank amount, 500.5 if decimals are not allowed, Pay pressed twice`
       "After the peer review, the comments have to be incorporated. A review that nobody applies does not change the case.",
       "I also check that the expected result can be observed and that the case maps to a requirement.",
     ],
-    how: "Page 14 is an image, so the saved text extract of the library PDF may not contain this checklist. The fields above are what that image shows.",
+    how: "Page 14 is an image, so text extraction may not capture this image-based checklist. The fields above are what that image shows.",
     sources: pdf("page 14", "Test Case Review"),
     related: ["mt-write-case", "mt-techniques", "mt-team"],
   },
@@ -550,12 +550,12 @@ Evidence: screen recording and the API response for C-18`,
     simple:
       "Severity asks how bad it is. Priority asks how fast we fix it. The names and the scale change by company.",
     points: [
-      "The note decides severity from the impact on the customer’s business workflow.",
+      "I use severity from the impact on the customer’s business workflow.",
       "Blocker, or show stopper: testing is blocked and the business flow is affected.",
       "Critical: the business is affected and the tester can still test other features.",
-      "Major: we are not sure of the business impact. Minor: we are sure the business flow is not affected. The note’s minor examples are spelling, alignment, overlap, and color.",
-      "The ATM examples: withdraw without a PIN is critical in the note, a valid PIN that cannot withdraw is a blocker, a missing confirmation is major, and a spelling mistake is minor.",
-      "Priority in the note is P1 now, P2 in a later cycle of the same release, and P3 in a later release.",
+      "Major: we are not sure of the business impact. Minor: we are sure the business flow is not affected. The minor examples are spelling, alignment, overlap, and color.",
+      "The ATM examples: withdraw without a PIN is critical, a valid PIN that cannot withdraw is a blocker, a missing confirmation is major, and a spelling mistake is minor.",
+      "Priority is P1 now, P2 in a later cycle of the same release, and P3 in a later release.",
       "The login failure is blocker and P1. A message sent to the wrong person is critical and P1. Remember-password failing is major and P2.",
       "I use the team’s scale in the report. I do not insist that every company has exactly these four names.",
     ],
@@ -579,7 +579,7 @@ Evidence: screen recording and the API response for C-18`,
       "Retest: I run the original steps. Closed only if they pass.",
       "Reopen if the same failure returns. A different failure is a new defect.",
       "Rejected and deferred need a reason. I do not delete the evidence.",
-      "The saved note does not draw this cycle. Teams rename the states. The idea of report, fix, retest, and close stays.",
+      " Teams rename the states. The idea of report, fix, retest, and close stays.",
     ],
     sources: [],
     related: ["mt-retest", "mt-rejected", "mt-bug-report"],
@@ -625,7 +625,7 @@ Evidence: screen recording and the API response for C-18`,
     example: {
       code: `Build 2.4.0 test summary
 Scope: campaign pause and the login fix
-Passed: 18  Failed: 1  Blocked: 2  Not run: mobile Safari
+Passed: 18 Failed: 1 Blocked: 2 Not run: mobile Safari
 Open: DEF-104 Activate stays Draft, Critical, P1
 Recommendation: do not release the activation story. Login fix is retested and can go.`,
       output: "A sign-off sample. The numbers are an illustration, not a project result.",
@@ -644,13 +644,13 @@ Recommendation: do not release the activation story. Login fix is retested and c
     simple:
       "I do not wait for the whole product. I test the stories in this sprint and carry unfinished work honestly into the next one.",
     points: [
-      "The note says Agile is incremental and iterative, and a large product is split into sprints.",
-      "A story point, in the note, is the time to develop and test a story. In practice it is a relative size for the team, not a promise of hours.",
-      "Spillover, in the note, is a story that does not release in this sprint and moves to the next one.",
+      "Agile is incremental and iterative, and a large product is split into sprints.",
+      "A story point, is the time to develop and test a story. In practice it is a relative size for the team, not a promise of hours.",
+      "Spillover, is a story that does not release in this sprint and moves to the next one.",
       "The retrospective includes the team and sometimes the customer. Good and bad points are written down and used in the next sprint.",
       "The sprint review is a demo. The product owner says what is done and what is not, and the next planning is set.",
-      "Planning, which the note points to at the end of the review, is where the team commits to the next set of stories. QA speaks up if the test effort is missing.",
-      "A daily stand-up is the short blocker meeting. The note does not describe it. I use it to raise a blocked case the same day.",
+      "Planning is where the team commits to the next set of stories. QA speaks up if the test effort is missing.",
+      "A daily stand-up is the short blocker meeting. I use it to raise a blocked case the same day.",
     ],
     sources: pdf("page 13", "Agile"),
     related: ["mt-impact", "mt-team", "mt-release"],
@@ -666,7 +666,7 @@ Recommendation: do not release the activation story. Login fix is retested and c
     simple:
       "A one-line code change can touch payment and email. The estimate follows the impact, not the size of the diff alone.",
     points: [
-      "The note’s impact meeting includes the testing team, the test lead, and sometimes the customer. They document the affected area.",
+      "The impact meeting includes the testing team, the test lead, and sometimes the customer. They document the affected area.",
       "I ask the developer which module, API, and table changed.",
       "I list the direct cases, the neighboring cases, and the smoke path.",
       "Estimation is the hours for design, data, execution, retest, and a small buffer. I do not hide the buffer.",
@@ -691,7 +691,7 @@ Recommendation: do not release the activation story. Login fix is retested and c
       "In the daily meeting I name the case that is blocked and who can unblock it.",
       "A defect goes to the developer with steps and evidence, not a screenshot alone.",
       "A disputed expected result goes to the product owner.",
-      "Pairing with a developer, which the note calls buddy testing, is useful when the bug cannot be reproduced.",
+      "Pairing with a developer, often called buddy testing, is useful when the bug cannot be reproduced.",
       "I hand another tester the data and the environment notes, not only the case title.",
     ],
     sources: [],

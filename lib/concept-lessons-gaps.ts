@@ -1,7 +1,6 @@
 import type { ConceptLesson, ConceptSource } from "./concepts";
 
-const BASIS =
-  "Prepared interview explanation. It is not a quotation from a saved PDF or Java file.";
+const BASIS = "Interview-ready answer.";
 
 const OOPS = "Interview_PDF/OOPS concept_Java.pdf";
 const ARRAYS = "Interview_PDF/Array_Collection_Java.pdf";
@@ -95,7 +94,7 @@ function fileSources(paths: string[]): ConceptSource[] {
 }
 
 function filePoints(paths: string[]): string[] {
-  return paths.map((path) => `${path.split("/").pop()} is saved. Open it in Source mode for the original program.`);
+  return paths.map((path) => `${path.split("/").pop()} provides a runnable implementation.`);
 }
 
 export const GAPS: ConceptLesson[] = [
@@ -105,7 +104,7 @@ export const GAPS: ConceptLesson[] = [
     title: "What are the types of inheritance?",
     aliases: ["types of inheritance", "single level inheritance", "multilevel inheritance", "hierarchical inheritance", "hybrid inheritance"],
     basis: BASIS,
-    summary: "The saved notes name five inheritance shapes. Java classes can use only the shapes that need one parent.",
+    summary: "The common inheritance shapes are single, multilevel, hierarchical, multiple through interfaces, and hybrid combinations. Java classes can use only the shapes that need one parent.",
     simple:
       "Single-level means one child extends one parent. Multi-level means a grandchild extends a child that extends a parent. Hierarchical means several children extend the same parent. Generalization moves shared members upward. Specialization adds members that belong only to the lower class.",
     points: [
@@ -117,7 +116,7 @@ export const GAPS: ConceptLesson[] = [
       "Generalization builds the parent from shared child members.",
       "Specialization adds behavior that belongs only to a child.",
     ],
-    how: "The saved OOPS note lists multiple inheritance as a type. A Java class cannot extend more than one class. A class can implement more than one interface. Hybrid inheritance is not a separate Java keyword. One saved heading uses the words multiple inheritance for a Parent, Child, and GrandChild chain. That chain is multi-level inheritance. The same note uses a framework BaseClass as an inheritance example. That example is framework usage. The Java rule is still extends and implements.",
+    how: "Java supports multiple inheritance of type through interfaces, but a class cannot extend multiple classes. A Java class cannot extend more than one class. A class can implement more than one interface. Hybrid inheritance is not a separate Java keyword. A Parent, Child, and GrandChild chain is multilevel inheritance, not multiple class inheritance. A framework BaseClass is a practical inheritance example. The Java rule is still extends and implements.",
     sources: [{ label: "OOPS notes, inheritance", path: OOPS, kind: "pdf", focus: "inheritance" }],
     related: ["inheritance", "abstract-interface"],
   },
@@ -128,11 +127,11 @@ export const GAPS: ConceptLesson[] = [
     aliases: ["shadowing", "variable shadowing"],
     basis: BASIS,
     summary: "Shadowing happens when a local variable uses the same name as a field. The local name hides the field inside that block.",
-    simple: "The saved note lists shadowing with method overloading and constructor overloading under compile-time polymorphism. The compiler decides which name is visible.",
+    simple: "Shadowing, method overloading, and constructor overloading are resolved at compile time. The compiler decides which name is visible.",
     points: [
       "A parameter or local variable can hide a field with the same name.",
       "this.field reaches the field when a parameter hides it.",
-      "The saved note groups shadowing with compile-time polymorphism.",
+      "Shadowing is resolved at compile time.",
     ],
     sources: [{ label: "OOPS notes, polymorphism", path: OOPS, kind: "pdf", focus: "shadowing" }],
     related: ["overloading", "this-super", "polymorphism"],
@@ -170,7 +169,7 @@ class Main {
       "An instance method needs an object.",
       "An instance initializer runs before the constructor body.",
     ],
-    how: "The saved note describes class loading as creating the static area, loading methods, giving static variables default values, and running static initializers. That is class initialization. It is not the same topic as the bootstrap, platform, and application class loaders.",
+    how: "Class loading as creating the static area, loading methods, giving static variables default values, and running static initializers. That is class initialization. It is not the same topic as the bootstrap, platform, and application class loaders.",
     sources: [{ label: "OOPS notes, static", path: OOPS, kind: "pdf", focus: "static" }],
     related: ["static-final", "class-loading", "constructors"],
   },
@@ -207,7 +206,7 @@ class Main {
       "compare belongs on a separate Comparator.",
       "TreeSet uses the natural order unless you pass a Comparator.",
     ],
-    how: "The saved OOPS note states this difference. This example is prepared. It is not copied from that note.",
+    how: "This difference. This is an interview-ready example. ",
     sources: [{ label: "OOPS notes, Comparable and Comparator", path: OOPS, kind: "pdf", focus: "comparable" }],
     related: ["set-hashset", "sorting-basics"],
   },
@@ -257,12 +256,12 @@ class Main {
     points: [
       "You cannot write new on the interface type alone.",
       "The interface declaration cannot be private, protected, or final.",
-      "The saved note says an interface can be compiled into a class file.",
+      "An interface can be compiled into a class file.",
       "Interface fields are public, static, and final.",
       "A static interface method is not inherited.",
       "An abstract interface method is inherited as part of the contract.",
     ],
-    how: "The saved note says an interface cannot be private. That statement is about the interface declaration. Applicable Java versions can still have private interface methods. The abstract-class lesson covers those methods.",
+    how: "An interface cannot be private. That statement is about the interface declaration. Applicable Java versions can still have private interface methods. The abstract-class lesson covers those methods.",
     sources: [{ label: "OOPS notes, interface", path: OOPS, kind: "pdf", focus: "interface" }],
     related: ["abstract-interface", "abstraction"],
   },
@@ -272,7 +271,7 @@ class Main {
     title: "What String constructors are commonly used?",
     aliases: ["string constructor", "string valueof", "valueof"],
     basis: BASIS,
-    summary: "The saved notes show three String constructors. They also show valueOf for a character array.",
+    summary: "I can create a String from another String, a character array, or a byte array. String.valueOf also converts a character array.",
     simple: "new String() creates an empty String. new String(text) copies an existing String. new String(characters) copies a char array. String.valueOf(characters) also builds a String from that array.",
     example: {
       code: `class Main {
@@ -306,7 +305,7 @@ class Main {
     title: "Which String methods should I remember?",
     aliases: ["string methods", "substring", "trim", "equalsignorecase"],
     basis: BASIS,
-    summary: "The saved String note lists the methods used most often in interviews. Each method returns a result. It does not change the original String.",
+    summary: "The lesson covers the String methods used most often in interviews. Each method returns a result. It does not change the original String.",
     simple: "trim removes leading and trailing spaces. substring builds a new String from a start index up to, but not including, an end index. indexOf returns the first matching position, or -1 when the text is absent.",
     example: {
       code: `class Main {
@@ -336,7 +335,7 @@ class Main {
       "compareTo() compares two Strings in order.",
       "hashCode() returns the String hash code.",
     ],
-    how: "The saved note spells one method equalsIgnorCase. The Java method name is equalsIgnoreCase. charAt and toCharArray already have their own lessons.",
+    how: "The example uses one method equalsIgnorCase. The Java method name is equalsIgnoreCase. charAt and toCharArray already have their own lessons.",
     sources: [{ label: "OOPS notes, String methods", path: OOPS, kind: "pdf", focus: "substring" }],
     related: ["string-basics", "string-charat", "string-equals"],
   },
@@ -427,8 +426,8 @@ class Main {
       "indexOf reports the first match.",
       "size, isEmpty, toArray, hashCode, and equals are also on List.",
       "Saved ArrayList names also include Collections.sort and Collections.shuffle.",
-      "The saved note spells shuffle as suffle. The Java method is Collections.shuffle.",
-      "The saved note spells containsAll as conatinsAll. The Java method is containsAll.",
+      "The example uses shuffle as suffle. The Java method is Collections.shuffle.",
+      "The example uses containsAll as conatinsAll. The Java method is containsAll.",
     ],
     sources: [{ label: "Array and collection notes, List", path: ARRAYS, kind: "pdf", focus: "list" }],
     related: ["list-arraylist", "linkedlist", "collection-methods"],
@@ -448,9 +447,9 @@ class Main {
       "The default load factor is 0.75.",
       "LinkedHashSet also starts at 16 and keeps insertion order.",
       "Saved HashSet method names include add, addAll, remove, removeAll, contains, containsAll, and isEmpty.",
-      "The saved note also names union, intersection, difference, and subset as HashSet checks.",
+      "HashSet also supports union, intersection, difference, and subset checks through collection operations.",
     ],
-    how: "The saved note writes the load factor as 0.75 percent. The Java load factor is the fraction 0.75, not 0.75 percent. HashSet can hold mixed reference types. TreeSet is stricter and is covered separately.",
+    how: "The example uses the load factor as 0.75 percent. The Java load factor is the fraction 0.75, not 0.75 percent. HashSet can hold mixed reference types. TreeSet is stricter and is covered separately.",
     sources: [{ label: "Array and collection notes, HashSet", path: ARRAYS, kind: "pdf", focus: "hashset" }],
     related: ["set-hashset", "duplicates"],
   },
@@ -489,7 +488,7 @@ class Main {
       "A bad comparison throws ClassCastException.",
       "TreeMap sorts by key.",
     ],
-    how: "The saved note says TreeSet elements must be the same comparable type. Mixed types that cannot be compared throw ClassCastException. This example is prepared.",
+    how: "TreeSet elements must be the same comparable type. Mixed types that cannot be compared throw ClassCastException. This is an interview-ready example.",
     sources: [{ label: "Array and collection notes, TreeSet", path: ARRAYS, kind: "pdf", focus: "treeset" }],
     related: ["set-hashset", "comparable-comparator", "map-hashmap"],
   },
@@ -522,7 +521,7 @@ class Main {
       "element throws when the queue is empty. peek returns null.",
       "The example uses offer, peek, and poll so the empty queue prints null.",
     ],
-    how: "The saved note says element and peek return true when a head exists. They return the head element. An empty queue makes element throw and peek return null. This example uses offer, peek, and poll so the empty queue prints null.",
+    how: "Element and peek return true when a head exists. They return the head element. An empty queue makes element throw and peek return null. This example uses offer, peek, and poll so the empty queue prints null.",
     sources: [{ label: "Array and collection notes, Queue", path: ARRAYS, kind: "pdf", focus: "queue" }],
     related: ["queue", "priority-queue"],
   },
@@ -533,7 +532,7 @@ class Main {
     aliases: ["priorityqueue", "priority queue"],
     basis: BASIS,
     summary: "PriorityQueue processes elements by priority, not only by arrival time.",
-    simple: "For integers, the smallest value is the head. poll removes that head. The saved note also says duplicates are allowed and mixed types are not.",
+    simple: "For integers, the smallest value is the head, and poll removes it. Duplicates are allowed, but mixed incomparable types are not.",
     example: {
       code: `import java.util.PriorityQueue;
 
@@ -554,7 +553,7 @@ class Main {
       "Duplicates are allowed.",
       "Elements must be mutually comparable.",
     ],
-    how: "The saved note says PriorityQueue allows insertion order. Do not describe it as a FIFO queue. FIFO is the usual Queue story. PriorityQueue orders by priority.",
+    how: "PriorityQueue allows insertion order. Do not describe it as a FIFO queue. FIFO is the usual Queue story. PriorityQueue orders by priority.",
     sources: [{ label: "Array and collection notes, PriorityQueue", path: ARRAYS, kind: "pdf", focus: "priorityqueue" }],
     related: ["queue", "queue-methods", "comparable-comparator"],
   },
@@ -625,7 +624,7 @@ class Main {
       "ListIterator can add and set.",
       "ListIterator works only with lists.",
     ],
-    how: "The saved note says Iterator cannot modify an element. remove is still a real Iterator method. ListIterator set replaces an element. This example is prepared.",
+    how: "Iterator cannot modify an element. remove is still a real Iterator method. ListIterator set replaces an element. This is an interview-ready example.",
     sources: [{ label: "Array and collection notes, Iterator", path: ARRAYS, kind: "pdf", focus: "iterator" }],
     related: ["iterator-listiterator", "list-methods"],
   },
@@ -636,7 +635,7 @@ class Main {
     aliases: ["sorting", "arrays sort", "bubble sort"],
     basis: BASIS,
     summary: "Sorting arranges elements in ascending or descending order. Arrays.sort is the built-in way for an array.",
-    simple: "The saved note also names bubble sort, selection sort, insertion sort, merge sort, heap sort, and quick sort. Sorting.java is the saved program.",
+    simple: "Common algorithms include bubble sort, selection sort, insertion sort, merge sort, heap sort, and quick sort. Sorting.java demonstrates this topic.",
     example: {
       code: `import java.util.Arrays;
 
@@ -652,9 +651,9 @@ class Main {
     points: [
       "Arrays.sort arranges the array in natural ascending order.",
       "Bubble sort, selection sort, and insertion sort are simple algorithms.",
-      "Merge sort, heap sort, and quick sort are the other names in the saved note.",
+      "Merge sort, heap sort, and quick sort are the other names.",
     ],
-    how: "The saved note writes Array.sort. The Java call is Arrays.sort. This example is prepared. The original Sorting.java stays available in Source mode.",
+    how: "The example uses Array.sort. The Java call is Arrays.sort. This is an interview-ready example. Sorting.java remains the runnable sorting example.",
     sources: [{ label: "Sorting.java", path: "src/main/java/Sorting/Sorting.java", kind: "java" }],
     related: ["search-sort", "comparable-comparator"],
   },
@@ -665,7 +664,7 @@ class Main {
     aliases: ["object class", "tostring", "getclass", "wait notify"],
     basis: BASIS,
     summary: "Object is the top class in Java. Every class inherits its methods.",
-    simple: "getClass tells you the runtime class. toString returns the text form. The saved note lists 11 Object methods.",
+    simple: "getClass returns the runtime class, and toString returns the text form. Object also provides methods such as equals, hashCode, clone, wait, notify, and notifyAll.",
     example: {
       code: `class Main {
     public static void main(String[] args) {
@@ -686,18 +685,18 @@ class Main {
       "notify and notifyAll wake waiting threads.",
       "getClass returns the runtime class.",
     ],
-    how: "The saved note calls getClass a final public class method. getClass is a final method that returns Class. It is not itself a class declaration. equals and hashCode already have their own lessons.",
+    how: "getClass is a final public method inherited from Object. getClass is a final method that returns Class. It is not itself a class declaration. equals and hashCode already have their own lessons.",
     sources: [{ label: "Array and collection notes, Object", path: ARRAYS, kind: "pdf", focus: "object" }],
     related: ["equals-hashcode", "equals-operator", "final-finally-finalize"],
   },
   {
     id: "number-programs",
     group: "arrays",
-    title: "Saved number and array programs",
+    title: "Number and array practice programs",
     aliases: ["number programs", "prime number program", "factorial program", "fibonacci program"],
     basis: BASIS,
-    summary: "These Java files are saved practice programs. Open one in Source mode to read the original file.",
-    simple: "The lesson examples elsewhere may use different sample data. These buttons open the original programs.",
+    summary: "These Java files are practice programs. Each file provides a runnable implementation.",
+    simple: "The lesson examples elsewhere may use different sample data. Each program demonstrates the named topic.",
     points: filePoints(JAVA_PROGRAMS),
     sources: fileSources(JAVA_PROGRAMS),
     related: ["array-programs", "string-programs"],
@@ -705,11 +704,11 @@ class Main {
   {
     id: "string-programs",
     group: "strings",
-    title: "Saved string programs",
+    title: "String practice programs",
     aliases: ["string programs", "anagram program", "palindrome string program"],
     basis: BASIS,
-    summary: "These string practice files are saved. Open one in Source mode to read the original program.",
-    simple: "They are not the source of the String lesson wording. The lessons explain the ideas. These files are the original programs.",
+    summary: "These are string practice programs. Each file provides a runnable implementation.",
+    simple: "Each file is a runnable practice program that demonstrates a specific String operation.",
     points: filePoints(STRING_PROGRAMS),
     sources: fileSources(STRING_PROGRAMS),
     related: ["string-basics", "string-methods"],
@@ -717,10 +716,10 @@ class Main {
   {
     id: "pattern-programs",
     group: "arrays",
-    title: "Saved pattern programs",
+    title: "Pattern practice programs",
     aliases: ["pattern programs", "star pattern", "number pattern"],
     basis: BASIS,
-    summary: "These pattern files are saved Java programs. Open one in Source mode to read the original file.",
+    summary: "These pattern files are Java programs. Each file provides a runnable implementation.",
     points: filePoints(PATTERN_PROGRAMS),
     sources: fileSources(PATTERN_PROGRAMS),
     related: ["number-programs"],

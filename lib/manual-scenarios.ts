@@ -1,6 +1,6 @@
 import type { ConceptLesson } from "./concepts";
 
-const BASIS = "Prepared interview explanation. It is not a quotation from the saved PDF.";
+const BASIS = "Interview-ready answer.";
 
 export const MANUAL_SCENARIOS: ConceptLesson[] = [
   {
@@ -168,7 +168,7 @@ Double submit: send 100 and press Pay twice. Expected: one debit of 100.`,
       "Run the closest happy path that should still pass.",
       "If it fails again, reopen the same defect. Add the build number, the new actual result, and the screenshot.",
       "If a different behavior breaks, file a separate defect and link it to the fix.",
-      "The saved note calls a retest manual only. A stable automated case can cover the same failed steps.",
+      "A retest can be manual or automated. A stable automated case can cover the same failed steps.",
     ],
     sources: [],
     related: ["mt-retest", "mt-regression", "mt-lifecycle"],
