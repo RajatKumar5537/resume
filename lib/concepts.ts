@@ -46,7 +46,15 @@ export type ConceptGroupId =
   | "ra-requests"
   | "ra-validation"
   | "ra-auth"
-  | "ra-sdet";
+  | "ra-sdet"
+  | "fw-pixel"
+  | "fw-discord"
+  | "fw-afs"
+  | "fw-nexus-ui"
+  | "fw-nexus-api"
+  | "fw-chatkit"
+  | "fw-meteor"
+  | "fw-hybrid";
 
 export type ConceptSource = {
   label: string;

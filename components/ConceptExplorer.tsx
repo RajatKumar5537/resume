@@ -314,6 +314,7 @@ export function ConceptExplorer() {
   const showingManual = subjectId === "manual-testing";
   const showingMongo = subjectId === "mongodb";
   const showingRest = subjectId === "rest-assured";
+  const showingFramework = subjectId === "framework-design";
   const showingLibrary = readySubject(subjectId);
   const lesson = pack?.byId(topicId);
   const lessonHits = useMemo(
@@ -524,7 +525,7 @@ export function ConceptExplorer() {
   const topicIndex = orderedTopics.indexOf(topicId);
   const previousTopic = topicIndex > 0 ? orderedTopics[topicIndex - 1] : "";
   const nextTopic = topicIndex >= 0 && topicIndex < orderedTopics.length - 1 ? orderedTopics[topicIndex + 1] : "";
-  const libraryTitle = showingRest ? "REST Assured concepts" : showingMongo ? "MongoDB concepts" : showingManual ? "Manual testing concepts" : showingPlaywright ? "Playwright concepts" : showingSelenium ? "Selenium concepts" : "Java concepts";
+  const libraryTitle = showingFramework ? "Framework design" : showingRest ? "REST Assured concepts" : showingMongo ? "MongoDB concepts" : showingManual ? "Manual testing concepts" : showingPlaywright ? "Playwright concepts" : showingSelenium ? "Selenium concepts" : "Java concepts";
 
   return (
     <div className={`concepts-page${showingLibrary ? " has-library" : ""}${showingLibrary && !showList ? " reading" : ""}`}>

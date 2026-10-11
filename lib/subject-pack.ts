@@ -8,7 +8,7 @@ export type SubjectPack = {
   firstId: string;
 };
 
-export const READY_SUBJECTS = ["java", "selenium", "playwright", "manual-testing", "mongodb", "rest-assured"];
+export const READY_SUBJECTS = ["java", "selenium", "playwright", "manual-testing", "mongodb", "rest-assured", "framework-design"];
 
 const packs = new Map<string, SubjectPack>();
 const loading = new Map<string, Promise<SubjectPack>>();
@@ -24,6 +24,10 @@ function toPack(
 }
 
 async function importSubject(subject: string): Promise<SubjectPack> {
+  if (subject === "framework-design") {
+    const mod = await import("@/lib/framework-lessons");
+    return toPack(mod.FRAMEWORK_GROUPS, mod.frameworkById, mod.frameworkInGroup, mod.searchFrameworkLessons);
+  }
   if (subject === "selenium") {
     const mod = await import("@/lib/selenium-lessons");
     return toPack(mod.SELENIUM_GROUPS, mod.seleniumById, mod.seleniumInGroup, mod.searchSeleniumLessons);

@@ -17,7 +17,7 @@ export const STUDY_SUBJECTS: StudySubject[] = [
   { id: "manual-testing", title: "Manual Testing", status: "ready", note: "Test design, defects, Agile workflow, and practical QA scenarios." },
   { id: "playwright", title: "Playwright", status: "ready", note: "Locators, assertions, and senior SDET interview questions." },
   { id: "bdd", title: "BDD", status: "later", note: "Not converted yet." },
-  { id: "framework", title: "Framework", status: "later", note: "Not converted yet." },
+  { id: "framework-design", title: "Framework Design", status: "ready", note: "Project-wise framework architecture, execution, reporting, limitations, and interview answers." },
   { id: "test-cases", title: "Test Cases", status: "later", note: "Not converted yet." },
   { id: "hr", title: "HR Round", status: "later", note: "Not converted yet." },
   { id: "cultural", title: "Cultural Round", status: "later", note: "Not converted yet." },
