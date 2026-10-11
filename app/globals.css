@@ -1334,6 +1334,14 @@ select {
     margin: 0;
     padding: 8px max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   }
+  .desk-app:not([data-screen="programs"]):not([data-screen="concepts"]):not([data-screen="interview"]) > main {
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
   .topbar {
     position: relative;
     flex: none;
