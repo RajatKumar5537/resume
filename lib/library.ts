@@ -38,6 +38,9 @@ const FOLDERS: { id: string; label: string; match: (path: string) => boolean }[]
   { id: "number", label: "Number", match: (path) => path.startsWith("src/main/java/Java/") },
   { id: "selenium", label: "Selenium", match: (path) => path.includes("/Selenium/") },
   { id: "restassured", label: "REST Assured", match: (path) => path.includes("/RestAssuredProgram/") },
+  { id: "playwright-js", label: "Playwright JS", match: (path) => path.startsWith("built-in/playwright-js/") },
+  { id: "axios-api", label: "Axios API", match: (path) => path.startsWith("built-in/axios-api/") },
+  { id: "express-js", label: "Express JS", match: (path) => path.startsWith("built-in/express-js/") },
   { id: "pdf", label: "PDF", match: (path) => path.startsWith("Interview_PDF/") },
 ];
 

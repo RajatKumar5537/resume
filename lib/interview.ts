@@ -99,6 +99,7 @@ function stem(word: string): string {
 
 function wordsFromPath(path: string): string[] {
   const chunks = path
+    .replace(/\.js$/i, ".javascript")
     .replace(/\.(java|pdf)$/i, "")
     .replace(/restassured/gi, "restassured")
     .replace(/([a-z])([A-Z])/g, "$1 $2")
@@ -331,16 +332,17 @@ export function matchPrograms(
   );
   const choice = (file: { path: string; name?: string; origin?: "mongodb" | "github" }): ProgramChoice => ({
     path: file.path,
-    title: (file.name || file.path.split("/").pop() || file.path).replace(/\.(java|pdf)$/i, "").replace(/[_-]+/g, " "),
+    title: (file.name || file.path.split("/").pop() || file.path).replace(/\.(java|js|pdf)$/i, "").replace(/[_-]+/g, " "),
     origin: file.origin === "mongodb" ? "mongodb" : "github",
   });
   if (savedHit) {
     return { confidentPath: savedHit.path, origin: "mongodb", close: [], otherLanguage: false };
   }
-  const skipRepo = wanted !== "auto" && wanted !== "java";
+  const repoForLanguage = repo.filter((file) => wanted === "auto" || (file.language || "java") === wanted);
+  const skipRepo = wanted !== "auto" && !repoForLanguage.length;
   const ranked = skipRepo
     ? { javaPath: "", pdfPath: "", focus: "", solved: "", otherLanguage: true }
-    : rankQuestion(question, repo);
+    : rankQuestion(question, repoForLanguage);
   const { specific } = questionTokens(question);
   const partial = (file: { path: string; name?: string; origin?: "mongodb" | "github" }) => {
     const words = wordsFromPath(file.origin === "mongodb" ? `saved/${topicKey(file.name || "").replace(/ /g, "-")}.java` : file.path);
@@ -456,7 +458,11 @@ function filesForMatch(saved: SavedProgram[], entries: RepoEntry[], pdfNotes: St
     ),
     ...entries
       .filter((entry) => entry.kind === "java")
-      .map((entry) => ({ ...entry, origin: "github" as const, language: "java" })),
+      .map((entry) => ({
+        ...entry,
+        origin: "github" as const,
+        language: entry.path.toLowerCase().endsWith(".js") ? "javascript" : "java",
+      })),
     ...pdfNotes.map((note) => ({
       path: note.path,
       name: note.title,
@@ -526,7 +532,7 @@ export async function answerInterview(
         code: pdf ? undefined : note.text,
         answer: pdf ? note.text : rankQuestion(asked, entries).solved || undefined,
         focus: pdf ? rankQuestion(asked, pdfNotes.map((item) => ({ path: item.path, name: item.title, kind: item.kind, text: item.text }))).focus : undefined,
-        language: "java",
+        language: hit.path.toLowerCase().endsWith(".js") ? "javascript" : "java",
         note: builtIn
           ? "Built-in interview program. Gemini was not called."
           : pdf

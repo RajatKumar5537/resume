@@ -20,7 +20,7 @@ type LibraryFolder = {
   files: LibraryFile[];
 };
 
-const LIBRARY_KEY = "desk-library-list-v3";
+const LIBRARY_KEY = "desk-library-list-v4";
 
 type SavedLibrary = { revision: string; folders: LibraryFolder[] };
 type LibraryResponse = LibraryListResponse;
@@ -31,6 +31,7 @@ function readSavedLibrary(): SavedLibrary | null {
     localStorage.removeItem("desk-library");
     localStorage.removeItem("desk-library-list");
     localStorage.removeItem("desk-library-list-v2");
+    localStorage.removeItem("desk-library-list-v3");
   } catch {
     // The old copy stored every file. Dropping it keeps the next open fast.
   }

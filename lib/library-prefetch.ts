@@ -1,4 +1,4 @@
-const LIBRARY_KEY = "desk-library-list-v3";
+const LIBRARY_KEY = "desk-library-list-v4";
 
 export type LibraryListFile = {
   path: string;

@@ -1,3 +1,5 @@
+import { BUILT_IN_JAVASCRIPT_PROGRAMS } from "@/lib/built-in-javascript-programs";
+
 export type BuiltInProgram = {
   path: string;
   title: string;
@@ -7,7 +9,7 @@ export type BuiltInProgram = {
 
 const COLLECTION_ROOT = "built-in/collection";
 
-export const BUILT_IN_PROGRAMS: BuiltInProgram[] = [
+const BUILT_IN_COLLECTION_PROGRAMS: BuiltInProgram[] = [
   {
     path: `${COLLECTION_ROOT}/ArrayListAddUpdateRemoveIterate.java`,
     title: "ArrayList add, update, remove, and iterate",
@@ -169,6 +171,11 @@ public class SortHashMapByValue {
 
 // Output: {UI=95, Mobile=88, API=82}`,
   },
+];
+
+export const BUILT_IN_PROGRAMS: BuiltInProgram[] = [
+  ...BUILT_IN_COLLECTION_PROGRAMS,
+  ...BUILT_IN_JAVASCRIPT_PROGRAMS,
 ];
 
 export function builtInProgram(path: string): BuiltInProgram | undefined {

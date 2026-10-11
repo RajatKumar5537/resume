@@ -74,7 +74,7 @@ export function InterviewDesk() {
     setError("");
     try {
       try {
-        const savedLibrary = window.localStorage.getItem("desk-library-list-v3");
+        const savedLibrary = window.localStorage.getItem("desk-library-list-v4");
         if (savedLibrary) {
           const revision = (JSON.parse(savedLibrary) as { revision?: string }).revision || "";
           syncNoteCacheRevision(revision);
