@@ -77,7 +77,7 @@ body {
 html[data-standalone="true"],
 html[data-standalone="true"] body {
   height: 100%;
-  min-height: 0;
+  min-height: 0 !important;
   overflow: hidden;
 }
 
@@ -1300,7 +1300,7 @@ select {
 
 /* Phone landscape: both cards fill the space under the header and stay aligned.
    Size them with flex, not viewport height or :has(), so the right card paints with the list. */
-@media screen and (max-height: 500px) and (min-width: 700px) {
+@media screen and (max-height: 500px) and (min-width: 700px) and (display-mode: browser) {
   html:not([data-standalone="true"]),
   html:not([data-standalone="true"]) body {
     height: 100%;
@@ -1319,6 +1319,8 @@ select {
     min-height: 0;
     width: 100%;
   }
+}
+@media screen and (max-height: 500px) and (min-width: 700px) {
   .programs-intro,
   .interview-intro { display: none; }
   .desk-app[data-screen="programs"] > main,
