@@ -973,6 +973,28 @@ select {
   overflow-y: auto;
 }
 
+/* Desktop Concepts uses the same two independent scroll panes as phone landscape. */
+@media screen and (min-width: 901px) and (min-height: 501px) {
+  .concepts-page .library {
+    height: calc(100dvh - 180px);
+    min-height: 320px;
+    align-items: stretch;
+  }
+
+  .concepts-page .library-tree,
+  .concepts-page .library-view {
+    height: 100%;
+    max-height: none;
+    min-height: 0;
+  }
+
+  .concepts-page .library-view {
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
 .concepts-page .subject-back {
   display: inline-flex;
   flex: none;
